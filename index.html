@@ -1,0 +1,1766 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Deutsch Akademie Kamerun</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+/* ── TOKENS ─────────────────────────────────── */
+:root {
+  --forest:   #16342A;
+  --forest2:  #1f4535;
+  --forest3:  #2a5c47;
+  --gold:     #C99A2E;
+  --gold2:    #e8b84b;
+  --sand:     #F7F3EC;
+  --clay:     #C85A3A;
+  --slate:    #3B4F5C;
+  --ink:      #111816;
+  --mist:     #EDF2F0;
+  --border:   #e8e3da;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--sand); color: var(--ink); -webkit-font-smoothing: antialiased; line-height: 1.6; }
+.serif { font-family: 'DM Serif Display', serif; }
+
+/* ── UTILITIES ──────────────────────────────── */
+.hidden { display: none !important; }
+.flex { display: flex; }
+.items-center { align-items: center; }
+.gap-8 { gap: 8px; }
+.gap-12 { gap: 12px; }
+.gap-16 { gap: 16px; }
+input, select, textarea { font-family: inherit; font-size: 13px; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; outline: none; width: 100%; background: white; transition: border-color .15s; }
+input:focus, select:focus, textarea:focus { border-color: var(--forest); }
+button { font-family: inherit; cursor: pointer; border: none; }
+
+/* ── BADGES ─────────────────────────────────── */
+.badge { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+.badge-green  { background: #d1fae5; color: #065f46; }
+.badge-gold   { background: #fef3c7; color: #92400e; }
+.badge-red    { background: #fee2e2; color: #991b1b; }
+.badge-gray   { background: #f1f5f9; color: #475569; }
+.badge-blue   { background: #dbeafe; color: #1e40af; }
+.badge-clay   { background: #fde8e0; color: #9a3412; }
+
+/* ── TOAST ───────────────────────────────────── */
+#toast { position: fixed; bottom: 24px; right: 24px; padding: 12px 20px; border-radius: 10px; background: var(--forest); color: white; font-size: 13px; font-weight: 500; z-index: 9999; transform: translateY(100px); opacity: 0; transition: all .3s; max-width: 320px; }
+#toast.show { transform: translateY(0); opacity: 1; }
+#toast.err { background: var(--clay); }
+
+/* ── SPINNER ─────────────────────────────────── */
+.spinner { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,.3); border-top-color: white; border-radius: 50%; animation: spin .7s linear infinite; display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── LOADING SCREEN ──────────────────────────── */
+#loading-screen { position: fixed; inset: 0; background: var(--forest); display: flex; align-items: center; justify-content: center; z-index: 1000; flex-direction: column; gap: 16px; }
+#loading-screen .logo { width: 52px; height: 52px; background: var(--gold); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 16px; }
+#loading-screen p { color: rgba(255,255,255,.4); font-size: 13px; }
+
+/* ═══════════════════════════════════════════════
+   LANDING PAGE
+═══════════════════════════════════════════════ */
+#landing { display: none; min-height: 100vh; }
+.land-nav { background: white; border-bottom: 1px solid var(--border); padding: 0 40px; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 40; }
+.logo-mark { width: 32px; height: 32px; background: var(--forest); border-radius: 7px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 11px; }
+.land-nav .brand { font-family: 'DM Serif Display', serif; font-size: 17px; color: var(--forest); margin-left: 10px; }
+.land-nav .nav-btns { display: flex; gap: 10px; }
+.btn-outline { padding: 8px 18px; border-radius: 8px; border: 1px solid var(--border); background: white; color: #444; font-size: 13px; font-weight: 500; }
+.btn-outline:hover { background: var(--sand); }
+.btn-primary { padding: 8px 18px; border-radius: 8px; background: var(--forest); color: white; font-size: 13px; font-weight: 600; }
+.btn-primary:hover { opacity: .9; }
+.btn-gold { padding: 8px 18px; border-radius: 8px; background: var(--gold); color: white; font-size: 13px; font-weight: 600; }
+.btn-gold:hover { opacity: .9; }
+
+.land-hero { background: linear-gradient(140deg, var(--forest) 0%, var(--forest3) 60%, #1e5540 100%); padding: 80px 40px 70px; text-align: center; }
+.land-hero h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 5vw, 3.2rem); color: white; line-height: 1.15; margin-bottom: 18px; }
+.land-hero h1 em { color: var(--gold2); font-style: italic; }
+.land-hero p { color: rgba(255,255,255,.65); font-size: 15px; max-width: 520px; margin: 0 auto 10px; }
+.land-hero .sub { color: rgba(255,255,255,.35); font-size: 13px; margin-bottom: 34px; }
+.hero-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 44px; }
+.hero-btn-main { padding: 14px 32px; border-radius: 10px; background: var(--gold); color: white; font-weight: 700; font-size: 14px; border: none; cursor: pointer; }
+.hero-btn-main:hover { opacity: .9; }
+.hero-btn-sec { padding: 14px 32px; border-radius: 10px; background: rgba(255,255,255,.1); color: white; font-weight: 500; font-size: 14px; border: 1px solid rgba(255,255,255,.2); cursor: pointer; }
+.land-stats { display: flex; gap: 40px; justify-content: center; flex-wrap: wrap; }
+.land-stat-n { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--gold2); }
+.land-stat-l { font-size: 11px; color: rgba(255,255,255,.4); margin-top: 2px; }
+
+.land-section { padding: 60px 40px; max-width: 1100px; margin: 0 auto; }
+.land-section h2 { font-family: 'DM Serif Display', serif; font-size: 26px; color: var(--forest); text-align: center; margin-bottom: 10px; }
+.land-section .sub2 { color: #888; font-size: 14px; text-align: center; margin-bottom: 36px; }
+.levels-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 14px; }
+.level-card { background: white; border-radius: 14px; border: 1px solid var(--border); padding: 22px 16px; text-align: center; cursor: pointer; transition: box-shadow .2s; }
+.level-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.08); }
+.level-card .lc-id { font-weight: 700; font-size: 18px; margin: 8px 0 4px; }
+.level-card .lc-name { font-size: 12px; color: #888; }
+
+.features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+.feat-card { padding: 22px; border-radius: 14px; border: 1px solid var(--border); background: white; }
+.feat-icon { font-size: 26px; margin-bottom: 10px; }
+.feat-title { font-weight: 600; font-size: 15px; color: var(--forest); margin-bottom: 6px; }
+.feat-desc { font-size: 13px; color: #888; line-height: 1.6; }
+
+.land-cta { background: linear-gradient(135deg, var(--forest), var(--forest3)); padding: 60px 40px; text-align: center; }
+.land-cta h2 { font-family: 'DM Serif Display', serif; font-size: 2rem; color: white; margin-bottom: 12px; }
+.land-cta p { color: rgba(255,255,255,.65); margin-bottom: 28px; }
+.land-footer { background: var(--forest); padding: 28px 40px; text-align: center; color: rgba(255,255,255,.3); font-size: 12px; }
+
+/* ═══════════════════════════════════════════════
+   AUTH MODAL
+═══════════════════════════════════════════════ */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.55); backdrop-filter: blur(4px); z-index: 500; display: flex; align-items: center; justify-content: center; padding: 16px; }
+.modal-box { background: white; border-radius: 18px; overflow: hidden; width: 100%; max-width: 440px; box-shadow: 0 24px 60px rgba(0,0,0,.25); }
+.modal-header { background: var(--forest); padding: 26px 30px 22px; }
+.modal-tabs { display: flex; gap: 2px; background: rgba(255,255,255,.08); border-radius: 8px; padding: 3px; margin-top: 14px; }
+.modal-tab { flex: 1; padding: 8px; border-radius: 6px; border: none; font-size: 13px; font-weight: 500; cursor: pointer; background: transparent; color: rgba(255,255,255,.5); transition: all .15s; }
+.modal-tab.active { background: white; color: var(--forest); }
+.modal-body { padding: 26px 30px; }
+.form-label { font-size: 12px; font-weight: 600; color: #555; display: block; margin-bottom: 6px; margin-top: 14px; }
+.form-label:first-child { margin-top: 0; }
+.lang-toggle { display: flex; gap: 8px; margin-bottom: 14px; }
+.lang-btn { flex: 1; padding: 8px; border-radius: 7px; font-size: 12px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: white; color: #888; transition: all .15s; }
+.lang-btn.active { border-color: var(--forest); background: var(--forest); color: white; }
+.role-toggle { display: flex; gap: 8px; margin-bottom: 4px; }
+.role-btn { flex: 1; padding: 9px; border-radius: 8px; border: 1px solid var(--border); background: white; color: #888; font-size: 12px; font-weight: 500; cursor: pointer; transition: all .15s; }
+.role-btn.active { border-color: var(--forest); background: #f0f6f3; color: var(--forest); }
+.auth-err { color: var(--clay); font-size: 12px; margin-top: 8px; min-height: 18px; }
+.auth-submit { width: 100%; padding: 12px; border-radius: 8px; background: var(--forest); color: white; font-weight: 700; font-size: 14px; margin-top: 12px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.auth-submit:hover { opacity: .9; }
+.auth-switch { text-align: center; font-size: 12px; color: #aaa; margin-top: 14px; }
+.auth-switch button { background: none; border: none; color: var(--forest); font-weight: 600; font-size: 12px; cursor: pointer; text-decoration: underline; }
+.demo-box { margin-top: 16px; padding: 14px; border-radius: 10px; background: #f8f5f0; border: 1px solid var(--border); }
+.demo-label { font-size: 11px; font-weight: 700; color: #999; letter-spacing: .06em; margin-bottom: 10px; }
+.demo-btn { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-radius: 7px; border: 1px solid var(--border); background: white; cursor: pointer; font-size: 12px; margin-bottom: 6px; width: 100%; transition: box-shadow .15s; }
+.demo-btn:last-child { margin-bottom: 0; }
+.demo-btn:hover { box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+.demo-role { font-weight: 600; }
+.demo-email { color: #aaa; }
+
+/* ═══════════════════════════════════════════════
+   APP SHELL (sidebar + main)
+═══════════════════════════════════════════════ */
+#app { display: none; min-height: 100vh; }
+.app-layout { display: flex; min-height: 100vh; }
+.sidebar { width: 240px; min-height: 100vh; flex-shrink: 0; background: var(--forest); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+.sb-logo { padding: 22px 18px 18px; border-bottom: 1px solid rgba(255,255,255,.07); display: flex; align-items: center; gap: 10px; }
+.sb-logo-mark { width: 32px; height: 32px; border-radius: 8px; background: var(--gold); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 11px; flex-shrink: 0; }
+.sb-brand { color: white; font-weight: 600; font-family: 'DM Serif Display', serif; font-size: 13px; line-height: 1.3; }
+.sb-sub { color: rgba(255,255,255,.35); font-size: 10px; letter-spacing: .08em; }
+.sb-user { padding: 14px 18px; border-bottom: 1px solid rgba(255,255,255,.07); display: flex; align-items: center; gap: 10px; }
+.sb-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: white; flex-shrink: 0; }
+.sb-name { color: white; font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sb-role-pill { font-size: 10px; padding: 1px 7px; border-radius: 999px; display: inline-block; margin-top: 2px; }
+.sb-nav { flex: 1; padding: 10px 10px; display: flex; flex-direction: column; gap: 2px; }
+.sb-link { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; border: none; background: transparent; color: rgba(255,255,255,.55); font-size: 13px; font-weight: 400; cursor: pointer; width: 100%; text-align: left; transition: all .15s; }
+.sb-link:hover { background: rgba(255,255,255,.05); color: rgba(255,255,255,.8); }
+.sb-link.active { color: var(--gold); background: rgba(201,154,46,.15); font-weight: 600; }
+.sb-link .sb-icon { font-size: 15px; width: 20px; text-align: center; }
+.sb-bottom { padding: 14px 10px; border-top: 1px solid rgba(255,255,255,.07); }
+.sb-logout { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; border: none; background: transparent; color: rgba(255,255,255,.3); font-size: 13px; cursor: pointer; width: 100%; }
+.sb-logout:hover { color: rgba(255,255,255,.6); }
+
+.main-area { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.topbar { background: white; border-bottom: 1px solid var(--border); padding: 0 28px; height: 54px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 30; }
+.topbar-title { font-family: 'DM Serif Display', serif; font-size: 16px; color: var(--forest); }
+.topbar-right { display: flex; align-items: center; gap: 10px; font-size: 12px; color: #888; }
+
+.page { padding: 24px 28px; display: none; }
+.page.active { display: block; }
+.page-title { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--forest); margin-bottom: 4px; }
+.page-sub { color: #888; font-size: 13px; margin-bottom: 24px; }
+
+/* ── STAT CARDS ──────────────────────────────── */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 24px; }
+.stat-card { background: white; border-radius: 14px; border: 1px solid var(--border); padding: 18px 20px; }
+.stat-icon { font-size: 20px; margin-bottom: 10px; }
+.stat-val { font-family: 'DM Serif Display', serif; font-size: 24px; margin-bottom: 4px; }
+.stat-label { font-size: 12px; color: #888; }
+
+/* ── CARDS ───────────────────────────────────── */
+.card { background: white; border-radius: 14px; border: 1px solid var(--border); padding: 22px; margin-bottom: 18px; }
+.card-title { font-weight: 700; font-size: 14px; color: var(--forest); margin-bottom: 14px; }
+.card-title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+
+/* ── TABLES ──────────────────────────────────── */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th { background: var(--sand); font-size: 11px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: .06em; padding: 10px 14px; text-align: left; }
+td { padding: 12px 14px; border-top: 1px solid #f0ece5; font-size: 13px; }
+tr:hover td { background: #fdfaf6; }
+
+/* ── PROGRESS BAR ────────────────────────────── */
+.prog-wrap { display: flex; align-items: center; gap: 8px; }
+.prog-bar { flex: 1; height: 6px; background: #f0ece5; border-radius: 999px; overflow: hidden; }
+.prog-fill { height: 100%; background: var(--gold); border-radius: 999px; }
+
+/* ── AVATAR ──────────────────────────────────── */
+.avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--forest); color: white; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; }
+
+/* ── ACTION BUTTONS ──────────────────────────── */
+.btn-sm { padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid; transition: opacity .15s; }
+.btn-sm:hover { opacity: .85; }
+.btn-danger { background: #fff5f5; border-color: #fca5a5; color: #dc2626; }
+.btn-success { background: #f0fdf4; border-color: #86efac; color: #16a34a; }
+.btn-forest { background: var(--forest); border-color: var(--forest); color: white; }
+.btn-gold { background: var(--gold); border-color: var(--gold); color: white; }
+.btn-border { background: white; border-color: var(--border); color: #555; }
+
+/* ── COURSE PLAYER ───────────────────────────── */
+.player-layout { display: flex; gap: 20px; align-items: flex-start; }
+.lesson-sidebar { width: 240px; flex-shrink: 0; background: white; border-radius: 14px; border: 1px solid var(--border); overflow: hidden; position: sticky; top: 80px; }
+.ls-header { padding: 14px 16px; background: var(--forest); color: white; font-size: 12px; font-weight: 600; }
+.ls-mod { padding: 7px 14px; font-size: 10px; font-weight: 700; color: #aaa; background: #faf7f2; border-bottom: 1px solid var(--border); text-transform: uppercase; letter-spacing: .07em; }
+.ls-lesson { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid #f7f4ef; cursor: pointer; border: none; background: white; width: 100%; text-align: left; transition: background .1s; border-left: 3px solid transparent; }
+.ls-lesson:hover { background: #faf7f2; }
+.ls-lesson.active { background: #f0f6f3; border-left-color: var(--forest); }
+.ls-lesson.done .ls-num { background: var(--forest3); color: white; }
+.ls-num { width: 22px; height: 22px; border-radius: 50%; background: #e8e3da; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #aaa; flex-shrink: 0; }
+.ls-text { flex: 1; min-width: 0; }
+.ls-title { font-size: 12px; font-weight: 500; color: var(--forest); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ls-dur { font-size: 10px; color: #aaa; }
+
+.player-main { flex: 1; min-width: 0; }
+.video-area { border-radius: 14px; overflow: hidden; background: var(--forest); aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; max-height: 400px; }
+.video-embed { width: 100%; height: 100%; border: none; }
+.video-placeholder { text-align: center; }
+.video-play { width: 64px; height: 64px; border-radius: 50%; background: var(--gold); display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; cursor: pointer; font-size: 24px; padding-left: 5px; }
+.video-title { color: white; font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.video-meta { color: rgba(255,255,255,.4); font-size: 12px; }
+
+/* ── QUIZ ────────────────────────────────────── */
+.quiz-opt { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 10px; border: 2px solid var(--border); margin-bottom: 10px; cursor: pointer; transition: all .15s; background: white; width: 100%; text-align: left; }
+.quiz-opt:hover:not(.locked) { border-color: var(--forest); background: #f0f6f3; }
+.quiz-opt.selected { border-color: var(--forest); background: #f0f6f3; }
+.quiz-opt.correct { border-color: #86efac; background: #f0fdf4; }
+.quiz-opt.wrong { border-color: #fca5a5; background: #fef2f2; }
+.opt-letter { width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid currentColor; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; color: #aaa; }
+.quiz-opt.selected .opt-letter { border-color: var(--forest); color: var(--forest); }
+.quiz-opt.correct .opt-letter { border-color: #16a34a; color: #16a34a; }
+.quiz-opt.wrong .opt-letter { border-color: #dc2626; color: #dc2626; }
+.quiz-exp { padding: 12px 16px; border-radius: 10px; margin-bottom: 16px; font-size: 13px; }
+.quiz-exp.correct { background: #f0fdf4; color: #16a34a; }
+.quiz-exp.wrong { background: #fef2f2; color: #dc2626; }
+
+/* ── CERTIFICATE ─────────────────────────────── */
+.cert-wrap { background: white; border-radius: 16px; border: 4px solid var(--gold); overflow: hidden; max-width: 680px; box-shadow: 0 8px 40px rgba(0,0,0,.08); }
+.cert-band { height: 6px; background: linear-gradient(90deg, var(--forest), var(--forest3)); }
+.cert-body { padding: 44px; text-align: center; }
+.cert-divider { width: 80px; height: 2px; background: var(--gold); margin: 18px auto; }
+.cert-eyebrow { font-size: 11px; letter-spacing: .2em; color: #aaa; text-transform: uppercase; margin-bottom: 10px; }
+.cert-title { font-family: 'DM Serif Display', serif; font-size: 2.2rem; color: var(--forest); margin-bottom: 8px; }
+.cert-name { font-family: 'DM Serif Display', serif; font-size: 1.8rem; color: var(--gold); font-style: italic; margin-bottom: 14px; }
+.cert-level-badge { display: inline-flex; align-items: center; gap: 12px; padding: 14px 28px; border-radius: 12px; background: var(--forest); margin: 18px 0; }
+.cert-level-badge .lv { color: white; font-weight: 700; font-size: 20px; }
+.cert-level-badge .lv-name { color: rgba(255,255,255,.6); font-size: 12px; }
+.cert-sigs { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 400px; margin: 20px auto 18px; }
+.cert-sig-line { height: 1px; background: var(--border); margin-bottom: 8px; }
+.cert-sig-name { font-weight: 600; font-size: 13px; color: var(--forest); }
+.cert-sig-role { font-size: 11px; color: #aaa; }
+.cert-id { font-family: monospace; font-size: 12px; color: var(--forest); font-weight: 700; padding: 8px 14px; background: var(--sand); border-radius: 6px; display: inline-block; }
+
+/* ── AVAILABILITY GRID ───────────────────────── */
+.avail-grid { overflow-x: auto; }
+.avail-table { border-collapse: collapse; width: 100%; }
+.avail-table th { padding: 8px 10px; font-size: 12px; font-weight: 600; color: var(--forest); text-align: center; }
+.avail-table td { padding: 4px 6px; text-align: center; }
+.slot-btn { width: 100%; padding: 6px 4px; border-radius: 6px; border: none; font-size: 11px; cursor: pointer; transition: all .15s; }
+.slot-btn.on { background: var(--forest3); color: white; font-weight: 600; }
+.slot-btn.off { background: #f5f0e8; color: #bbb; }
+
+/* ── FORM ────────────────────────────────────── */
+.form-group { margin-bottom: 16px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.big-btn { width: 100%; padding: 12px; border-radius: 9px; background: var(--forest); color: white; font-weight: 700; font-size: 14px; cursor: pointer; border: none; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.big-btn:hover { opacity: .9; }
+.success-msg { padding: 12px 16px; border-radius: 10px; background: #f0fdf4; border: 1px solid #bbf7d0; color: #16a34a; font-size: 13px; margin-bottom: 16px; display: none; }
+
+/* ── FLASHCARDS ──────────────────────────────── */
+.fc-scene { perspective: 800px; width: 100%; max-width: 440px; height: 220px; cursor: pointer; margin: 0 auto 20px; }
+.fc-card { width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .5s; position: relative; }
+.fc-card.flipped { transform: rotateY(180deg); }
+.fc-face { position: absolute; inset: 0; border-radius: 16px; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; backface-visibility: hidden; padding: 24px; text-align: center; }
+.fc-front { background: var(--forest); }
+.fc-back  { background: white; transform: rotateY(180deg); }
+.fc-de    { font-size: 28px; font-weight: 700; color: white; font-family: 'DM Serif Display', serif; }
+.fc-hint  { font-size: 12px; color: rgba(255,255,255,.5); }
+.fc-tr    { font-size: 20px; color: var(--forest); font-weight: 600; }
+.fc-ex    { font-size: 12px; color: #888; }
+.fc-controls { display: flex; justify-content: center; gap: 12px; }
+
+/* ── BOOKING ─────────────────────────────────── */
+.slot-pick { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+.slot-pick button { padding: 8px 18px; border-radius: 8px; border: 2px solid var(--border); background: white; font-size: 13px; font-weight: 500; cursor: pointer; transition: all .15s; }
+.slot-pick button.sel { border-color: var(--forest); background: var(--forest); color: white; }
+.teacher-card { display: flex; align-items: center; gap: 16px; padding: 18px; background: #f7f3ec; border-radius: 14px; margin-bottom: 20px; }
+.teacher-avatar { width: 52px; height: 52px; border-radius: 50%; background: var(--forest3); color: white; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; flex-shrink: 0; }
+
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .player-layout { flex-direction: column; }
+  .lesson-sidebar { width: 100%; position: static; }
+  .land-hero { padding: 50px 20px 50px; }
+  .land-section { padding: 40px 20px; }
+  .page { padding: 16px; }
+  .form-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading-screen">
+  <div class="logo">DA</div>
+  <div class="spinner"></div>
+  <p>Chargement...</p>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- ═══ LANDING ═══════════════════════════════ -->
+<div id="landing">
+  <nav class="land-nav">
+    <div class="flex items-center">
+      <div class="logo-mark">DA</div>
+      <span class="land-brand brand serif" style="margin-left:10px">Deutsch Akademie Kamerun</span>
+    </div>
+    <div class="nav-btns">
+      <button class="btn-outline" onclick="showAuth('login')">Se connecter</button>
+      <button class="btn-primary" onclick="showAuth('signup')">S'inscrire</button>
+    </div>
+  </nav>
+
+  <section class="land-hero">
+    <div style="display:inline-flex;align-items:center;gap:6px;padding:4px 14px;border-radius:999px;background:rgba(201,154,46,.18);color:var(--gold2);font-size:12px;font-weight:600;margin-bottom:26px;letter-spacing:.05em">
+      🇩🇪 Plateforme Officielle — Official Platform
+    </div>
+    <h1>Apprenez l'Allemand.<br><em>Maîtrisez votre avenir.</em></h1>
+    <p>La première université de langue allemande en ligne pour les Camerounais — cours vidéo structurés, tuteurs privés, certifications et suivi complet.</p>
+    <p class="sub">The first online German university for Cameroonians — structured, certified, bilingual.</p>
+    <div class="hero-btns">
+      <button class="hero-btn-main" onclick="showAuth('signup')">Commencer maintenant →</button>
+      <button class="hero-btn-sec" onclick="showAuth('login')">J'ai déjà un compte</button>
+    </div>
+    <div class="land-stats">
+      <div><div class="land-stat-n">A1–C2</div><div class="land-stat-l">Niveaux CECRL</div></div>
+      <div><div class="land-stat-n">20+</div><div class="land-stat-l">Ans d'expérience</div></div>
+      <div><div class="land-stat-n">🇫🇷🇬🇧</div><div class="land-stat-l">Bilingue</div></div>
+      <div><div class="land-stat-n">100%</div><div class="land-stat-l">En ligne</div></div>
+    </div>
+  </section>
+
+  <section class="land-section">
+    <h2>De A1 à C2 — Parcours complet CECRL</h2>
+    <p class="sub2">Chaque niveau débloque le suivant · Each level unlocks the next</p>
+    <div class="levels-grid">
+      <div class="level-card" onclick="showAuth('signup')"><div style="font-size:28px">🌱</div><div class="lc-id" style="color:#2d8a4e">A1</div><div class="lc-name">Débutant</div></div>
+      <div class="level-card" onclick="showAuth('signup')"><div style="font-size:28px">🌿</div><div class="lc-id" style="color:var(--gold)">A2</div><div class="lc-name">Élémentaire</div></div>
+      <div class="level-card" onclick="showAuth('signup')"><div style="font-size:28px">🌳</div><div class="lc-id" style="color:var(--clay)">B1</div><div class="lc-name">Intermédiaire</div></div>
+      <div class="level-card" onclick="showAuth('signup')"><div style="font-size:28px">🎓</div><div class="lc-id" style="color:var(--slate)">B2</div><div class="lc-name">Avancé</div></div>
+      <div class="level-card" onclick="showAuth('signup')"><div style="font-size:28px">🏆</div><div class="lc-id" style="color:#6b3fa0">C1</div><div class="lc-name">Expert</div></div>
+      <div class="level-card" onclick="showAuth('signup')"><div style="font-size:28px">⭐</div><div class="lc-id" style="color:var(--forest)">C2</div><div class="lc-name">Maîtrise</div></div>
+    </div>
+  </section>
+
+  <section style="background:white;padding:60px 0">
+    <div class="land-section" style="padding-top:0;padding-bottom:0">
+      <h2>Tout ce dont vous avez besoin</h2>
+      <p class="sub2" style="margin-bottom:32px"></p>
+      <div class="features-grid">
+        <div class="feat-card"><div class="feat-icon">🎬</div><div class="feat-title">Vidéos Structurées</div><div class="feat-desc">Des leçons vidéo enregistrées par notre professeur, disponibles 24h/24 à votre rythme.</div></div>
+        <div class="feat-card"><div class="feat-icon">🃏</div><div class="feat-title">Flashcards Vocabulaire</div><div class="feat-desc">Mémorisez le vocabulaire avec des flashcards interactives intégrées à chaque leçon.</div></div>
+        <div class="feat-card"><div class="feat-icon">👨‍🏫</div><div class="feat-title">Cours Privés</div><div class="feat-desc">Réservez des sessions individuelles avec un tuteur expert via le calendrier intégré.</div></div>
+        <div class="feat-card"><div class="feat-icon">📊</div><div class="feat-title">Suivi Complet</div><div class="feat-desc">Visualisez votre progression, vos scores, vos certificats et votre historique.</div></div>
+        <div class="feat-card"><div class="feat-icon">🏅</div><div class="feat-title">Certifications</div><div class="feat-desc">Certificat officiel à chaque niveau, avec code de vérification unique.</div></div>
+        <div class="feat-card"><div class="feat-icon">🌍</div><div class="feat-title">100% Bilingue</div><div class="feat-desc">Toute la plateforme en français et en anglais pour tous les Camerounais.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="land-cta">
+    <h2>Commencez aujourd'hui.</h2>
+    <p>Rejoignez des centaines d'apprenants camerounais sur la voie de l'allemand.</p>
+    <button class="hero-btn-main" onclick="showAuth('signup')">Créer mon compte gratuit →</button>
+  </div>
+  <div class="land-footer">© 2025 Deutsch Akademie Kamerun · Plateforme officielle d'apprentissage de l'allemand</div>
+</div>
+
+<!-- ═══ AUTH MODAL ══════════════════════════════ -->
+<div id="auth-modal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="flex items-center gap-8">
+        <div class="sb-logo-mark">DA</div>
+        <div><div style="color:white;font-weight:600;font-family:'DM Serif Display',serif;font-size:15px">Deutsch Akademie Kamerun</div><div style="color:rgba(255,255,255,.4);font-size:11px">Plateforme officielle</div></div>
+      </div>
+      <div class="modal-tabs">
+        <button class="modal-tab active" id="tab-login" onclick="switchTab('login')">Se connecter</button>
+        <button class="modal-tab" id="tab-signup" onclick="switchTab('signup')">S'inscrire</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="lang-toggle">
+        <button class="lang-btn active" id="lang-fr" onclick="setLang('fr')">🇫🇷 Français</button>
+        <button class="lang-btn" id="lang-en" onclick="setLang('en')">🇬🇧 English</button>
+      </div>
+
+      <div id="signup-fields" class="hidden">
+        <label class="form-label" id="lbl-name">Nom complet</label>
+        <input type="text" id="auth-name" placeholder="Votre nom complet" />
+        <label class="form-label" id="lbl-iam">Je suis</label>
+        <div class="role-toggle">
+          <button class="role-btn active" id="role-student" onclick="setRole('student')">🎓 Étudiant</button>
+          <button class="role-btn" id="role-teacher" onclick="setRole('teacher')">👨‍🏫 Enseignant</button>
+        </div>
+        <div id="level-field">
+          <label class="form-label" id="lbl-level">Niveau actuel</label>
+          <select id="auth-level">
+            <option value="A1">A1 — Débutant</option>
+            <option value="A2">A2 — Élémentaire</option>
+            <option value="B1">B1 — Intermédiaire</option>
+            <option value="B2">B2 — Avancé</option>
+          </select>
+        </div>
+      </div>
+
+      <label class="form-label">Email</label>
+      <input type="email" id="auth-email" placeholder="votre@email.com" />
+      <label class="form-label" id="lbl-pass">Mot de passe</label>
+      <input type="password" id="auth-pass" placeholder="••••••••" />
+      <div class="auth-err" id="auth-err"></div>
+      <button class="auth-submit" id="auth-btn" onclick="doAuth()">
+        <span id="auth-btn-text">Me connecter</span>
+        <span id="auth-spinner" class="spinner hidden"></span>
+      </button>
+      <p class="auth-switch">
+        <span id="switch-text">Pas encore inscrit?</span>
+        <button onclick="switchTab(currentTab==='login'?'signup':'login')" id="switch-btn">S'inscrire</button>
+      </p>
+
+      <div class="demo-box">
+        <div class="demo-label">DÉMONSTRATION RAPIDE</div>
+        <button class="demo-btn" onclick="quickLogin('superadmin')"><span class="demo-role" style="color:var(--gold)">👑 Super Admin</span><span class="demo-email">ceo@dak.cm</span></button>
+        <button class="demo-btn" onclick="quickLogin('teacher')"><span class="demo-role" style="color:var(--forest3)">👨‍🏫 Enseignant</span><span class="demo-email">prof@dak.cm</span></button>
+        <button class="demo-btn" onclick="quickLogin('student')"><span class="demo-role" style="color:var(--clay)">🎓 Étudiant</span><span class="demo-email">etudiant@dak.cm</span></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ APP SHELL ════════════════════════════════ -->
+<div id="app">
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sb-logo">
+        <div class="sb-logo-mark">DA</div>
+        <div><div class="sb-brand">Deutsch Akademie</div><div class="sb-sub">KAMERUN</div></div>
+      </div>
+      <div class="sb-user">
+        <div class="sb-avatar" id="sb-avatar">?</div>
+        <div style="overflow:hidden;flex:1">
+          <div class="sb-name" id="sb-name">—</div>
+          <span class="sb-role-pill" id="sb-role-pill">—</span>
+        </div>
+      </div>
+      <nav class="sb-nav" id="sb-nav"></nav>
+      <div class="sb-bottom">
+        <button class="sb-logout" onclick="doLogout()">→ Déconnexion</button>
+      </div>
+    </aside>
+
+    <div class="main-area">
+      <div class="topbar">
+        <span class="topbar-title" id="topbar-title">—</span>
+        <div class="topbar-right">
+          <div style="width:8px;height:8px;border-radius:50%;background:#22c55e"></div>
+          <span id="topbar-user">—</span>
+        </div>
+      </div>
+      <div id="pages"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  CONFIGURATION — paste your Supabase credentials here
+// ══════════════════════════════════════════════════════════
+const SUPABASE_URL  = 'PASTE_YOUR_SUPABASE_URL_HERE'
+const SUPABASE_KEY  = 'PASTE_YOUR_SUPABASE_ANON_KEY_HERE'
+
+// ── Supabase client ───────────────────────────────────────
+const { createClient } = window.supabase
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY)
+
+// ── State ─────────────────────────────────────────────────
+let currentUser = null
+let currentProfile = null
+let currentTab = 'login'
+let currentLang = 'fr'
+let currentRole = 'student'
+let currentPage = ''
+let quizState = {}
+let flashcardIdx = 0
+let flashcardFlipped = false
+let availState = {}
+
+// ── Curriculum data (add more here as content is created) ──
+const CURRICULUM = {
+  A1: {
+    color: '#2d8a4e', icon: '🌱', nameFr: 'Grand Débutant', nameEn: 'Absolute Beginner',
+    modules: [
+      { title: 'Module 1 — Fondations', lessons: [
+        { id: 'a1-1', title: 'L\'Alphabet Allemand', titleEn: 'The German Alphabet', dur: '18 min',
+          videoUrl: '', // paste YouTube embed URL here e.g. https://www.youtube.com/embed/VIDEO_ID
+          desc: 'Apprenez l\'alphabet allemand et les règles de prononciation de base.',
+          descEn: 'Learn the German alphabet and basic pronunciation rules.' },
+        { id: 'a1-2', title: 'Salutations & Présentations', titleEn: 'Greetings & Introductions', dur: '22 min',
+          videoUrl: '',
+          desc: 'Guten Morgen! Apprenez à saluer les gens à différents moments de la journée.',
+          descEn: 'Guten Morgen! Learn to greet people at different times of day.' },
+      ]},
+      { title: 'Module 2 — Chiffres & Couleurs', lessons: [
+        { id: 'a1-3', title: 'Les Chiffres 1–100', titleEn: 'Numbers 1–100', dur: '20 min', videoUrl: '',
+          desc: 'Comptez en allemand et utilisez les chiffres au quotidien.',
+          descEn: 'Count in German and use numbers in everyday contexts.' },
+        { id: 'a1-4', title: 'Les Couleurs', titleEn: 'Colors', dur: '16 min', videoUrl: '',
+          desc: 'Décrivez le monde avec les couleurs en allemand.',
+          descEn: 'Describe the world using colors in German.' },
+      ]},
+    ],
+    flashcards: [
+      { de: 'Guten Morgen', fr: 'Bonjour (matin)', en: 'Good morning', ex: 'Guten Morgen! Wie geht es Ihnen?' },
+      { de: 'Danke', fr: 'Merci', en: 'Thank you', ex: 'Danke schön!' },
+      { de: 'Bitte', fr: 'S\'il vous plaît / De rien', en: 'Please / You\'re welcome', ex: 'Bitte sehr.' },
+      { de: 'Auf Wiedersehen', fr: 'Au revoir', en: 'Goodbye', ex: 'Auf Wiedersehen!' },
+      { de: 'Ich heiße...', fr: 'Je m\'appelle...', en: 'My name is...', ex: 'Ich heiße Marie.' },
+      { de: 'Wie geht es Ihnen?', fr: 'Comment allez-vous?', en: 'How are you?', ex: 'Wie geht es Ihnen? — Gut, danke!' },
+    ],
+    quiz: [
+      { q: 'Comment dit-on "Bonjour (matin)" en allemand?', qEn: 'How do you say "Good morning" in German?',
+        opts: ['Guten Abend','Guten Morgen','Gute Nacht','Tschüss'], correct: 1,
+        exp: '"Guten Morgen" est la salutation du matin.', expEn: '"Guten Morgen" is the morning greeting.' },
+      { q: 'Que signifie "Danke"?', qEn: 'What does "Danke" mean?',
+        opts: ['S\'il vous plaît','Désolé','Merci','Au revoir'], correct: 2,
+        exp: '"Danke" signifie merci.', expEn: '"Danke" means thank you.' },
+      { q: 'Comment dit-on "trois" en allemand?', qEn: 'How do you say "three" in German?',
+        opts: ['Zwei','Vier','Drei','Fünf'], correct: 2,
+        exp: '"Drei" = trois. Zwei=2, Vier=4, Fünf=5.', expEn: '"Drei" = three. Zwei=2, Vier=4, Fünf=5.' },
+      { q: 'Quelle couleur est "blau"?', qEn: 'What color is "blau"?',
+        opts: ['Rouge','Vert','Jaune','Bleu'], correct: 3,
+        exp: '"Blau" = bleu. Rot=rouge, Grün=vert, Gelb=jaune.', expEn: '"Blau" = blue. Rot=red, Grün=green, Gelb=yellow.' },
+      { q: 'Comment dit-on "Je m\'appelle" en allemand?', qEn: 'How do you say "My name is" in German?',
+        opts: ['Ich gehe','Ich heiße','Ich bin groß','Ich esse'], correct: 1,
+        exp: '"Ich heiße" = Je m\'appelle.', expEn: '"Ich heiße" = My name is.' },
+    ]
+  },
+  A2: {
+    color: '#C99A2E', icon: '🌿', nameFr: 'Élémentaire', nameEn: 'Elementary',
+    modules: [
+      { title: 'Module 1 — Verbes', lessons: [
+        { id: 'a2-1', title: 'Verbes au Présent', titleEn: 'Present Tense', dur: '28 min', videoUrl: '',
+          desc: 'Maîtrisez les verbes réguliers et irréguliers au présent.',
+          descEn: 'Master regular and irregular verbs in present tense.' },
+      ]},
+    ],
+    flashcards: [
+      { de: 'Wie viel kostet das?', fr: 'Combien ça coûte?', en: 'How much does it cost?', ex: 'Wie viel kostet das Buch?' },
+      { de: 'Ich möchte...', fr: 'Je voudrais...', en: 'I would like...', ex: 'Ich möchte einen Kaffee, bitte.' },
+    ],
+    quiz: [
+      { q: 'Comment dit-on "Combien ça coûte?" en allemand?', qEn: 'How do you say "How much does it cost?"',
+        opts: ['Was ist das?','Wo ist das?','Wie viel kostet das?','Wann kostet das?'], correct: 2,
+        exp: '"Wie viel kostet das?" = Combien cela coûte-t-il?', expEn: '"Wie viel kostet das?" = How much does that cost?' },
+    ]
+  }
+}
+
+const DAYS = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi']
+const SLOTS = ['08:00','09:00','10:00','11:00','14:00','15:00','16:00','17:00']
+
+// ── Toast ─────────────────────────────────────────────────
+function toast(msg, isErr=false) {
+  const t = document.getElementById('toast')
+  t.textContent = msg
+  t.className = 'show' + (isErr ? ' err' : '')
+  setTimeout(() => t.className = '', 3200)
+}
+
+// ── Show / hide screens ───────────────────────────────────
+function showLanding() {
+  document.getElementById('loading-screen').style.display = 'none'
+  document.getElementById('landing').style.display = 'block'
+  document.getElementById('app').style.display = 'none'
+}
+function showApp() {
+  document.getElementById('loading-screen').style.display = 'none'
+  document.getElementById('landing').style.display = 'none'
+  document.getElementById('app').style.display = 'block'
+}
+function showAuth(tab='login') {
+  document.getElementById('auth-modal').classList.remove('hidden')
+  switchTab(tab)
+}
+function closeAuth() {
+  document.getElementById('auth-modal').classList.add('hidden')
+}
+
+// ── Auth UI helpers ───────────────────────────────────────
+function switchTab(tab) {
+  currentTab = tab
+  document.getElementById('tab-login').classList.toggle('active', tab==='login')
+  document.getElementById('tab-signup').classList.toggle('active', tab==='signup')
+  document.getElementById('signup-fields').classList.toggle('hidden', tab==='login')
+  document.getElementById('auth-btn-text').textContent = tab==='login' ? 'Me connecter' : 'Créer mon compte'
+  document.getElementById('switch-text').textContent = tab==='login' ? 'Pas encore inscrit?' : 'Déjà inscrit?'
+  document.getElementById('switch-btn').textContent = tab==='login' ? "S'inscrire" : 'Se connecter'
+  document.getElementById('auth-err').textContent = ''
+}
+
+function setLang(l) {
+  currentLang = l
+  document.getElementById('lang-fr').classList.toggle('active', l==='fr')
+  document.getElementById('lang-en').classList.toggle('active', l==='en')
+}
+function setRole(r) {
+  currentRole = r
+  document.getElementById('role-student').classList.toggle('active', r==='student')
+  document.getElementById('role-teacher').classList.toggle('active', r==='teacher')
+  document.getElementById('level-field').style.display = r==='student' ? 'block' : 'none'
+}
+
+function setBtnLoading(loading) {
+  document.getElementById('auth-spinner').classList.toggle('hidden', !loading)
+  document.getElementById('auth-btn').disabled = loading
+}
+
+// ── Quick demo login (creates accounts if needed) ─────────
+const DEMO = {
+  superadmin: { email: 'ceo@dak.cm', password: 'Demo1234!', name: 'Dr. Jean-Paul Mbarga', role: 'superadmin' },
+  teacher:    { email: 'prof@dak.cm', password: 'Demo1234!', name: 'Prof. Kenmogne Alain', role: 'teacher' },
+  student:    { email: 'etudiant@dak.cm', password: 'Demo1234!', name: 'Amina Bello', role: 'student' }
+}
+async function quickLogin(type) {
+  const d = DEMO[type]
+  setBtnLoading(true)
+  // try login first
+  let { data, error } = await sb.auth.signInWithPassword({ email: d.email, password: d.password })
+  if (error) {
+    // account doesn't exist yet — create it
+    const res = await sb.auth.signUp({ email: d.email, password: d.password,
+      options: { data: { full_name: d.name, role: d.role, language: 'fr' } } })
+    if (res.error) { toast(res.error.message, true); setBtnLoading(false); return }
+    // sign in after creating
+    const r2 = await sb.auth.signInWithPassword({ email: d.email, password: d.password })
+    if (r2.error) { toast(r2.error.message, true); setBtnLoading(false); return }
+    data = r2.data
+  }
+  setBtnLoading(false)
+}
+
+// ── Real auth ─────────────────────────────────────────────
+async function doAuth() {
+  const email = document.getElementById('auth-email').value.trim()
+  const pass  = document.getElementById('auth-pass').value
+  document.getElementById('auth-err').textContent = ''
+
+  if (!email || !pass) { document.getElementById('auth-err').textContent = 'Veuillez remplir tous les champs.'; return }
+
+  setBtnLoading(true)
+
+  if (currentTab === 'login') {
+    const { error } = await sb.auth.signInWithPassword({ email, password: pass })
+    if (error) { document.getElementById('auth-err').textContent = 'Email ou mot de passe incorrect.'; setBtnLoading(false); return }
+  } else {
+    const name = document.getElementById('auth-name').value.trim()
+    if (!name) { document.getElementById('auth-err').textContent = 'Veuillez entrer votre nom.'; setBtnLoading(false); return }
+    if (pass.length < 8) { document.getElementById('auth-err').textContent = 'Mot de passe: minimum 8 caractères.'; setBtnLoading(false); return }
+    const level = document.getElementById('auth-level').value
+    const { error } = await sb.auth.signUp({ email, password: pass,
+      options: { data: { full_name: name, role: currentRole, language: currentLang, current_level: level } }
+    })
+    if (error) { document.getElementById('auth-err').textContent = error.message; setBtnLoading(false); return }
+    toast('Compte créé! Vérifiez votre email pour confirmer.'); closeAuth(); setBtnLoading(false); return
+  }
+  setBtnLoading(false)
+}
+
+async function doLogout() {
+  await sb.auth.signOut()
+  currentUser = null; currentProfile = null
+  showLanding()
+}
+
+// ── Load profile from Supabase ────────────────────────────
+async function loadProfile(userId) {
+  const { data, error } = await sb.from('profiles').select('*').eq('id', userId).single()
+  if (error || !data) return null
+  return data
+}
+
+// ── Boot: check session ───────────────────────────────────
+async function boot() {
+  const { data: { session } } = await sb.auth.getSession()
+  if (session) {
+    currentUser = session.user
+    currentProfile = await loadProfile(session.user.id)
+    if (currentProfile) { closeAuth(); buildPortal(); showApp() }
+    else showLanding()
+  } else {
+    showLanding()
+  }
+
+  // listen to auth changes
+  sb.auth.onAuthStateChange(async (_e, session) => {
+    if (session && session.user) {
+      currentUser = session.user
+      currentProfile = await loadProfile(session.user.id)
+      // if profile not yet created (trigger may lag), wait and retry
+      if (!currentProfile) {
+        await new Promise(r => setTimeout(r, 1500))
+        currentProfile = await loadProfile(session.user.id)
+      }
+      if (currentProfile) { closeAuth(); buildPortal(); showApp() }
+    } else {
+      showLanding()
+    }
+  })
+}
+
+// ══════════════════════════════════════════════════════════
+//  PORTAL BUILDER — builds the correct sidebar + pages
+//  based on role
+// ══════════════════════════════════════════════════════════
+function buildPortal() {
+  const role = currentProfile?.role || 'student'
+  const name = currentProfile?.full_name || 'Utilisateur'
+  const initials = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()
+  const roleColors = { superadmin: '#C99A2E', admin: '#C99A2E', teacher: '#2a5c47', student: '#C85A3A' }
+  const roleLabels = { superadmin: 'Super Admin', admin: 'Admin', teacher: 'Enseignant', student: 'Étudiant' }
+  const accent = roleColors[role]
+
+  document.getElementById('sb-avatar').textContent = initials
+  document.getElementById('sb-avatar').style.background = accent
+  document.getElementById('sb-name').textContent = name
+  document.getElementById('sb-role-pill').textContent = roleLabels[role]
+  document.getElementById('sb-role-pill').style.background = accent + '22'
+  document.getElementById('sb-role-pill').style.color = accent
+  document.getElementById('topbar-user').textContent = name
+
+  const NAV = {
+    superadmin: [
+      { icon:'📊', label:'Vue d\'ensemble', key:'sa-overview' },
+      { icon:'👥', label:'Étudiants', key:'sa-students' },
+      { icon:'👨‍🏫', label:'Enseignants', key:'sa-teachers' },
+      { icon:'📚', label:'Cours', key:'sa-courses' },
+      { icon:'📅', label:'Sessions', key:'sa-sessions' },
+      { icon:'💳', label:'Finances', key:'sa-finances' },
+      { icon:'🔍', label:'Journal d\'audit', key:'sa-audit' },
+    ],
+    teacher: [
+      { icon:'🏠', label:'Tableau de bord', key:'t-overview' },
+      { icon:'📚', label:'Mes Cours', key:'t-courses' },
+      { icon:'📅', label:'Disponibilités', key:'t-calendar' },
+      { icon:'✅', label:'Sessions', key:'t-sessions' },
+      { icon:'💰', label:'Mes Revenus', key:'t-earnings' },
+      { icon:'➕', label:'Créer un Cours', key:'t-create' },
+    ],
+    student: [
+      { icon:'🏠', label:'Tableau de bord', key:'s-overview' },
+      { icon:'📚', label:'Mes Cours', key:'s-courses' },
+      { icon:'▶', label:'Apprendre', key:'s-learn' },
+      { icon:'🃏', label:'Flashcards', key:'s-flash' },
+      { icon:'📝', label:'Quiz', key:'s-quiz' },
+      { icon:'📅', label:'Cours Privés', key:'s-booking' },
+      { icon:'🏅', label:'Certificat', key:'s-cert' },
+      { icon:'💳', label:'Facturation', key:'s-billing' },
+    ]
+  }
+  const nav = NAV[role] || NAV.student
+  const navEl = document.getElementById('sb-nav')
+  navEl.innerHTML = nav.map(n =>
+    `<button class="sb-link" data-key="${n.key}" onclick="navigate('${n.key}')">
+      <span class="sb-icon">${n.icon}</span>${n.label}
+    </button>`
+  ).join('')
+
+  // build all pages
+  buildPages(role)
+  navigate(nav[0].key)
+}
+
+function navigate(key) {
+  currentPage = key
+  document.querySelectorAll('.sb-link').forEach(b => b.classList.toggle('active', b.dataset.key === key))
+  document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + key))
+  const label = document.querySelector(`.sb-link[data-key="${key}"]`)?.textContent.trim() || ''
+  document.getElementById('topbar-title').textContent = label
+  // trigger page-specific load
+  onPageLoad(key)
+}
+
+// ── Page-specific data loaders ────────────────────────────
+async function onPageLoad(key) {
+  if (key === 'sa-overview')  loadAdminOverview()
+  if (key === 'sa-students')  loadAdminStudents()
+  if (key === 'sa-teachers')  loadAdminTeachers()
+  if (key === 'sa-courses')   loadAdminCourses()
+  if (key === 'sa-sessions')  loadAdminSessions()
+  if (key === 'sa-finances')  loadAdminFinances()
+  if (key === 'sa-audit')     loadAuditLogs()
+  if (key === 't-overview')   loadTeacherOverview()
+  if (key === 't-courses')    loadTeacherCourses()
+  if (key === 't-sessions')   loadTeacherSessions()
+  if (key === 't-earnings')   loadTeacherEarnings()
+  if (key === 't-calendar')   loadCalendar()
+  if (key === 's-overview')   loadStudentOverview()
+  if (key === 's-courses')    loadStudentCourses()
+  if (key === 's-learn')      loadLearn()
+  if (key === 's-flash')      loadFlashcards()
+  if (key === 's-quiz')       loadQuiz()
+  if (key === 's-booking')    loadBooking()
+  if (key === 's-cert')       loadCertificate()
+  if (key === 's-billing')    loadBilling()
+}
+
+// ══════════════════════════════════════════════════════════
+//  BUILD PAGES — HTML skeletons for each portal
+// ══════════════════════════════════════════════════════════
+function buildPages(role) {
+  const container = document.getElementById('pages')
+  container.innerHTML = ''
+
+  if (role === 'superadmin' || role === 'admin') {
+    container.innerHTML = `
+      <div class="page" id="page-sa-overview">
+        <p class="page-title">Vue d'ensemble</p><p class="page-sub" id="sa-greeting"></p>
+        <div class="stats-grid" id="sa-stats"></div>
+        <div class="card"><div class="card-title">Sessions récentes</div><div class="table-wrap"><table><thead><tr><th>Étudiant</th><th>Tuteur</th><th>Date</th><th>Sujet</th><th>Statut</th></tr></thead><tbody id="sa-sessions-tbl"></tbody></table></div></div>
+      </div>
+      <div class="page" id="page-sa-students">
+        <div class="card-title-row"><p class="page-title">Étudiants</p><input style="width:220px" placeholder="Rechercher..." oninput="filterStudents(this.value)" /></div>
+        <div class="card"><div class="table-wrap"><table><thead><tr><th>Étudiant</th><th>Niveau</th><th>Progression</th><th>Abonnement</th><th>Certificats</th><th>Actions</th></tr></thead><tbody id="students-tbl"></tbody></table></div></div>
+      </div>
+      <div class="page" id="page-sa-teachers">
+        <p class="page-title">Enseignants</p>
+        <div id="teachers-list"></div>
+      </div>
+      <div class="page" id="page-sa-courses">
+        <p class="page-title">Gestion des Cours</p>
+        <div id="courses-list"></div>
+      </div>
+      <div class="page" id="page-sa-sessions">
+        <p class="page-title">Sessions & Réservations</p>
+        <div class="card"><div class="table-wrap"><table><thead><tr><th>Étudiant</th><th>Tuteur</th><th>Date</th><th>Durée</th><th>Sujet</th><th>Statut</th><th>Action</th></tr></thead><tbody id="sessions-tbl"></tbody></table></div></div>
+      </div>
+      <div class="page" id="page-sa-finances">
+        <p class="page-title">Finances</p>
+        <div class="stats-grid" id="fin-stats"></div>
+        <div class="card"><div class="card-title-row"><span class="card-title">Transactions</span><button class="btn-sm btn-border" onclick="exportCSV()">↓ Exporter CSV</button></div><div class="table-wrap"><table><thead><tr><th>Étudiant</th><th>Cours</th><th>Montant</th><th>Méthode</th><th>Date</th><th>Statut</th></tr></thead><tbody id="payments-tbl"></tbody></table></div></div>
+      </div>
+      <div class="page" id="page-sa-audit">
+        <p class="page-title">Journal d'Audit</p>
+        <div class="card"><div class="table-wrap"><table><thead><tr><th>#</th><th>Acteur</th><th>Action</th><th>Horodatage</th><th>IP</th></tr></thead><tbody id="audit-tbl"></tbody></table></div></div>
+      </div>
+    `
+  } else if (role === 'teacher') {
+    container.innerHTML = `
+      <div class="page" id="page-t-overview">
+        <p class="page-title">Tableau de bord</p><p class="page-sub">Bienvenue, voici votre activité.</p>
+        <div class="stats-grid" id="t-stats"></div>
+        <div class="card"><div class="card-title">Prochaines Sessions</div><div id="t-upcoming"></div></div>
+      </div>
+      <div class="page" id="page-t-courses">
+        <div class="card-title-row"><p class="page-title">Mes Cours</p><button class="btn-sm btn-forest" onclick="navigate('t-create')">+ Nouveau cours</button></div>
+        <div id="t-courses-list"></div>
+      </div>
+      <div class="page" id="page-t-calendar">
+        <p class="page-title">Mes Disponibilités</p>
+        <p class="page-sub">Cliquez sur un créneau pour basculer disponible / indisponible.</p>
+        <div class="card"><div class="avail-grid" id="avail-grid-wrap"></div>
+        <div style="display:flex;gap:12px;margin-top:14px;align-items:center">
+          <div style="display:flex;gap:6px;align-items:center"><div style="width:14px;height:14px;border-radius:3px;background:var(--forest3)"></div><span style="font-size:12px;color:#888">Disponible</span></div>
+          <div style="display:flex;gap:6px;align-items:center"><div style="width:14px;height:14px;border-radius:3px;background:#f5f0e8"></div><span style="font-size:12px;color:#888">Indisponible</span></div>
+          <button class="btn-sm btn-forest" style="margin-left:auto" onclick="saveAvailability()">Enregistrer les disponibilités</button>
+        </div></div>
+      </div>
+      <div class="page" id="page-t-sessions">
+        <p class="page-title">Validation des Sessions</p>
+        <div id="t-sessions-list"></div>
+      </div>
+      <div class="page" id="page-t-earnings">
+        <p class="page-title">Mes Revenus</p>
+        <div class="stats-grid" id="t-earn-stats"></div>
+        <div class="card"><div class="card-title">Historique des paiements</div><div id="t-earn-hist"></div></div>
+      </div>
+      <div class="page" id="page-t-create">
+        <p class="page-title">Créer un Cours</p>
+        <p class="page-sub">Le cours sera soumis à l'approbation de l'administration avant d'être publié.</p>
+        <div class="success-msg" id="course-success">✓ Cours soumis pour approbation!</div>
+        <div class="card" style="max-width:640px">
+          <div class="form-group"><label class="form-label">Titre du cours</label><input id="c-title" placeholder="ex: German A1 — Grand Débutant" /></div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Niveau</label><select id="c-level"><option value="A1">A1 — Débutant</option><option value="A2">A2 — Élémentaire</option><option value="B1">B1 — Intermédiaire</option><option value="B2">B2 — Avancé</option></select></div>
+            <div class="form-group"><label class="form-label">Prix (FCFA)</label><input id="c-price" type="number" value="15000" /></div>
+          </div>
+          <div class="form-group"><label class="form-label">Description</label><textarea id="c-desc" rows="3" placeholder="Décrivez le contenu du cours..."></textarea></div>
+          <div class="form-group"><label class="form-label">URL vidéo intro (YouTube embed)</label><input id="c-video" placeholder="https://www.youtube.com/embed/..." /></div>
+          <button class="big-btn" onclick="submitCourse()">Soumettre pour approbation →</button>
+        </div>
+      </div>
+    `
+  } else {
+    // student
+    container.innerHTML = `
+      <div class="page" id="page-s-overview">
+        <p class="page-title" id="s-greeting">Bonjour!</p>
+        <p class="page-sub">Continuez votre parcours en allemand.</p>
+        <div class="stats-grid" id="s-stats"></div>
+        <div class="card" id="s-prog-card">
+          <div class="card-title-row"><span class="card-title" id="s-prog-title">Progression — A1</span><button class="btn-sm btn-forest" onclick="navigate('s-learn')">Continuer →</button></div>
+          <div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" id="s-prog-bar" style="width:0%"></div></div><span id="s-prog-pct" style="font-size:12px;color:var(--gold);font-weight:600">0%</span></div>
+        </div>
+        <div class="card"><div class="card-title">Prochaine session privée</div><div id="s-next-session"></div></div>
+      </div>
+      <div class="page" id="page-s-courses">
+        <p class="page-title">Mes Cours</p>
+        <div id="s-courses-list"></div>
+      </div>
+      <div class="page" id="page-s-learn">
+        <div class="player-layout" id="player-wrap"></div>
+      </div>
+      <div class="page" id="page-s-flash">
+        <p class="page-title">Flashcards Vocabulaire</p>
+        <p class="page-sub">Cliquez sur la carte pour voir la traduction.</p>
+        <div id="flash-wrap"></div>
+      </div>
+      <div class="page" id="page-s-quiz">
+        <div id="quiz-wrap" style="max-width:600px;margin:0 auto"></div>
+      </div>
+      <div class="page" id="page-s-booking">
+        <p class="page-title">Réserver un Cours Privé</p>
+        <p class="page-sub">Choisissez un créneau avec votre tuteur.</p>
+        <div id="booking-wrap"></div>
+      </div>
+      <div class="page" id="page-s-cert">
+        <p class="page-title">Mes Certificats</p>
+        <div id="cert-wrap"></div>
+      </div>
+      <div class="page" id="page-s-billing">
+        <p class="page-title">Facturation</p>
+        <div id="billing-wrap"></div>
+      </div>
+    `
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  SUPER ADMIN DATA LOADERS
+// ══════════════════════════════════════════════════════════
+let allStudents = []
+async function loadAdminOverview() {
+  const name = currentProfile.full_name.split(' ').pop()
+  const el = document.getElementById('sa-greeting')
+  if (el) el.textContent = `Bienvenue, ${name}. Voici l'état de la plateforme.`
+  const [{ count: sc }, { count: tc }, { data: pays }] = await Promise.all([
+    sb.from('profiles').select('*', { count: 'exact', head: true }).eq('role','student'),
+    sb.from('profiles').select('*', { count: 'exact', head: true }).eq('role','teacher'),
+    sb.from('payments').select('amount_fcfa, status'),
+  ])
+  const revenue = (pays||[]).filter(p=>p.status==='paid').reduce((s,p)=>s+p.amount_fcfa,0)
+  const pending = (pays||[]).filter(p=>p.status==='pending').reduce((s,p)=>s+p.amount_fcfa,0)
+  const statsEl = document.getElementById('sa-stats')
+  if (!statsEl) return
+  statsEl.innerHTML = [
+    { icon:'👥', label:'Étudiants', val: sc||0, color:'var(--forest)' },
+    { icon:'👨‍🏫', label:'Enseignants', val: tc||0, color:'var(--forest3)' },
+    { icon:'💰', label:'Revenu total', val: `${(revenue||0).toLocaleString()} FCFA`, color:'var(--gold)' },
+    { icon:'⏳', label:'En attente', val: `${(pending||0).toLocaleString()} FCFA`, color:'var(--clay)' },
+  ].map(s => `<div class="stat-card"><div class="stat-icon">${s.icon}</div><div class="stat-val" style="color:${s.color}">${s.val}</div><div class="stat-label">${s.label}</div></div>`).join('')
+
+  const { data: sessions } = await sb.from('bookings').select('*').order('scheduled_at',{ascending:false}).limit(5)
+  const st = document.getElementById('sa-sessions-tbl')
+  if (st) st.innerHTML = (sessions||[]).map(b=>`<tr>
+    <td>${b.student_id.slice(0,6)}</td><td>${b.teacher_id.slice(0,6)}</td>
+    <td style="color:#888;font-size:12px">${new Date(b.scheduled_at).toLocaleDateString('fr-FR')}</td>
+    <td style="color:#555;font-size:12px">${b.topic||'—'}</td>
+    <td>${statusBadge(b.status)}</td>
+  </tr>`).join('') || '<tr><td colspan="5" style="color:#aaa;text-align:center;padding:20px">Aucune session</td></tr>'
+}
+
+async function loadAdminStudents() {
+  const { data } = await sb.from('profiles').select('*').eq('role','student').order('created_at',{ascending:false})
+  allStudents = data || []
+  renderStudents(allStudents)
+}
+
+function renderStudents(students) {
+  const tbl = document.getElementById('students-tbl')
+  if (!tbl) return
+  tbl.innerHTML = students.map(s => `<tr>
+    <td><div style="display:flex;align-items:center;gap:10px"><div class="avatar">${(s.full_name||'?').slice(0,2).toUpperCase()}</div><div><div style="font-weight:600;font-size:13px;color:var(--forest)">${s.full_name||'—'}</div><div style="font-size:11px;color:#aaa">${s.email}</div></div></div></td>
+    <td><span style="font-weight:700;color:var(--gold)">${s.current_level||'A1'}</span></td>
+    <td><div class="prog-wrap"><div class="prog-bar" style="width:80px"><div class="prog-fill" style="width:30%"></div></div><span style="font-size:11px;color:#888">30%</span></div></td>
+    <td><span class="badge badge-green">Actif</span></td>
+    <td style="font-size:12px;color:#888">🏅 0</td>
+    <td><div style="display:flex;gap:6px">
+      ${s.status!=='suspended'
+        ? `<button class="btn-sm btn-danger" onclick="suspendUser('${s.id}','${s.full_name}')">Suspendre</button>`
+        : `<button class="btn-sm btn-success" onclick="restoreUser('${s.id}','${s.full_name}')">Réactiver</button>`}
+    </div></td>
+  </tr>`).join('') || '<tr><td colspan="6" style="color:#aaa;text-align:center;padding:20px">Aucun étudiant</td></tr>'
+}
+
+function filterStudents(q) {
+  const filtered = allStudents.filter(s => (s.full_name||'').toLowerCase().includes(q.toLowerCase()) || s.email.toLowerCase().includes(q.toLowerCase()))
+  renderStudents(filtered)
+}
+
+async function suspendUser(id, name) {
+  if (!confirm(`Suspendre ${name}?`)) return
+  const { error } = await sb.from('profiles').update({ status: 'suspended' }).eq('id', id)
+  if (error) { toast('Erreur: ' + error.message, true); return }
+  await logAudit('user_suspended', 'profiles', id)
+  toast(`${name} suspendu(e).`)
+  loadAdminStudents()
+}
+
+async function restoreUser(id, name) {
+  const { error } = await sb.from('profiles').update({ status: 'active' }).eq('id', id)
+  if (error) { toast('Erreur: ' + error.message, true); return }
+  await logAudit('user_restored', 'profiles', id)
+  toast(`${name} réactivé(e).`)
+  loadAdminStudents()
+}
+
+async function loadAdminTeachers() {
+  const { data } = await sb.from('profiles').select('*').eq('role','teacher').order('created_at',{ascending:false})
+  const el = document.getElementById('teachers-list')
+  if (!el) return
+  el.innerHTML = (data||[]).map(t => `
+    <div class="card" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+      <div class="avatar" style="width:44px;height:44px;font-size:14px;background:var(--forest3)">${(t.full_name||'?').slice(0,2).toUpperCase()}</div>
+      <div style="flex:1;min-width:160px"><div style="font-weight:700;font-size:14px;color:var(--forest)">${t.full_name||'—'}</div><div style="font-size:12px;color:#aaa">${t.email}</div></div>
+      <span class="badge ${t.status==='active'?'badge-green':'badge-gold'}">${t.status==='active'?'Actif':'En attente'}</span>
+      <div style="display:flex;gap:8px">
+        ${t.status!=='active' ? `<button class="btn-sm btn-forest" onclick="approveTeacher('${t.id}','${t.full_name}')">Approuver</button>` : ''}
+        ${t.status==='active' ? `<button class="btn-sm btn-danger" onclick="suspendUser('${t.id}','${t.full_name}')">Suspendre</button>` : ''}
+        <button class="btn-sm btn-gold" onclick="toast('Paiement à intégrer après CinetPay.')">Payer</button>
+      </div>
+    </div>`).join('') || '<div class="card" style="color:#aaa;text-align:center;padding:30px">Aucun enseignant inscrit</div>'
+}
+
+async function approveTeacher(id, name) {
+  const { error } = await sb.from('profiles').update({ status: 'active' }).eq('id', id)
+  if (error) { toast('Erreur', true); return }
+  await logAudit('teacher_approved', 'profiles', id)
+  toast(`${name} approuvé(e)!`)
+  loadAdminTeachers()
+}
+
+async function loadAdminCourses() {
+  const { data } = await sb.from('courses').select('*, teacher:profiles!teacher_id(full_name)').order('created_at',{ascending:false})
+  const el = document.getElementById('courses-list')
+  if (!el) return
+  el.innerHTML = (data||[]).map(c => `
+    <div class="card" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+      <span style="font-size:32px">${c.thumbnail_emoji||'📚'}</span>
+      <div style="flex:1;min-width:200px"><div style="font-weight:700;font-size:14px;color:var(--forest)">${c.title}</div><div style="font-size:12px;color:#aaa">par ${c.teacher?.full_name||'—'} · Niveau ${c.level}</div></div>
+      <div style="text-align:center"><div style="font-weight:700;color:var(--gold)">${(c.price_fcfa||0).toLocaleString()} FCFA</div><div style="font-size:11px;color:#aaa">Prix</div></div>
+      ${statusBadge(c.status)}
+      <div style="display:flex;gap:8px">
+        ${c.status==='pending' ? `<button class="btn-sm btn-forest" onclick="approveCourse('${c.id}','${c.title}')">Approuver</button>` : ''}
+        <button class="btn-sm btn-border" onclick="toast('Détails du cours.')">Voir</button>
+      </div>
+    </div>`).join('') || '<div class="card" style="color:#aaa;text-align:center;padding:30px">Aucun cours</div>'
+}
+
+async function approveCourse(id, title) {
+  const { error } = await sb.from('courses').update({ status: 'published' }).eq('id', id)
+  if (error) { toast('Erreur', true); return }
+  await logAudit('course_approved', 'courses', id)
+  toast(`"${title}" publié!`)
+  loadAdminCourses()
+}
+
+async function loadAdminSessions() {
+  const { data } = await sb.from('bookings').select('*').order('scheduled_at',{ascending:false})
+  const tbl = document.getElementById('sessions-tbl')
+  if (!tbl) return
+  tbl.innerHTML = (data||[]).map(b=>`<tr>
+    <td style="font-weight:500;color:var(--forest)">${b.student_id.slice(0,8)}</td>
+    <td style="color:#666">${b.teacher_id.slice(0,8)}</td>
+    <td style="color:#888;font-size:12px">${new Date(b.scheduled_at).toLocaleString('fr-FR')}</td>
+    <td style="color:#888;font-size:12px">${b.duration_min} min</td>
+    <td style="color:#555;font-size:12px">${b.topic||'—'}</td>
+    <td>${statusBadge(b.status)}</td>
+    <td>${b.status==='disputed'?`<button class="btn-sm btn-forest" onclick="resolveDispute('${b.id}')">Résoudre</button>`:'—'}</td>
+  </tr>`).join('') || '<tr><td colspan="7" style="color:#aaa;text-align:center;padding:20px">Aucune session</td></tr>'
+}
+
+async function resolveDispute(id) {
+  const { error } = await sb.from('bookings').update({ status: 'confirmed' }).eq('id', id)
+  if (error) { toast('Erreur', true); return }
+  toast('Dispute résolue — session confirmée.')
+  loadAdminSessions()
+}
+
+async function loadAdminFinances() {
+  const { data } = await sb.from('payments').select('*, student:profiles!student_id(full_name)').order('created_at',{ascending:false})
+  const pays = data || []
+  const total = pays.filter(p=>p.status==='paid').reduce((s,p)=>s+p.amount_fcfa,0)
+  const pending = pays.filter(p=>p.status==='pending').reduce((s,p)=>s+p.amount_fcfa,0)
+  const failed = pays.filter(p=>p.status==='failed').reduce((s,p)=>s+p.amount_fcfa,0)
+  const fs = document.getElementById('fin-stats')
+  if (fs) fs.innerHTML = [
+    { icon:'💰', label:'Total encaissé', val:`${total.toLocaleString()} FCFA`, color:'var(--forest)' },
+    { icon:'⏳', label:'En attente', val:`${pending.toLocaleString()} FCFA`, color:'var(--gold)' },
+    { icon:'❌', label:'Échecs', val:`${failed.toLocaleString()} FCFA`, color:'var(--clay)' },
+    { icon:'📊', label:'Transactions', val:pays.length, color:'var(--slate)' },
+  ].map(s=>`<div class="stat-card"><div class="stat-icon">${s.icon}</div><div class="stat-val" style="color:${s.color}">${s.val}</div><div class="stat-label">${s.label}</div></div>`).join('')
+
+  const tbl = document.getElementById('payments-tbl')
+  if (tbl) tbl.innerHTML = pays.map(p=>`<tr>
+    <td style="font-weight:500;color:var(--forest)">${p.student?.full_name||p.student_id.slice(0,8)}</td>
+    <td style="color:#666">${p.description||'—'}</td>
+    <td style="font-weight:700;color:var(--forest)">${(p.amount_fcfa||0).toLocaleString()} ${p.currency||'FCFA'}</td>
+    <td style="color:#888;font-size:12px">${p.method||'—'}</td>
+    <td style="color:#aaa;font-size:12px">${new Date(p.created_at).toLocaleDateString('fr-FR')}</td>
+    <td>${statusBadge(p.status)}</td>
+  </tr>`).join('') || '<tr><td colspan="6" style="color:#aaa;text-align:center;padding:20px">Aucune transaction</td></tr>'
+}
+
+function exportCSV() {
+  toast('Export CSV — fonctionnel après intégration CinetPay.')
+}
+
+async function loadAuditLogs() {
+  const { data } = await sb.from('audit_logs').select('*').order('created_at',{ascending:false}).limit(50)
+  const tbl = document.getElementById('audit-tbl')
+  if (!tbl) return
+  tbl.innerHTML = (data||[]).map(l=>`<tr>
+    <td style="color:#aaa;font-size:12px">#${l.id}</td>
+    <td style="font-weight:500;font-size:13px;color:var(--forest)">${l.actor_email||l.actor_id?.slice(0,8)||'System'}</td>
+    <td style="font-size:13px;color:#555">${l.action}</td>
+    <td style="font-size:12px;color:#aaa">${new Date(l.created_at).toLocaleString('fr-FR')}</td>
+    <td style="font-size:12px;color:#aaa;font-family:monospace">${l.ip_address||'—'}</td>
+  </tr>`).join('') || '<tr><td colspan="5" style="color:#aaa;text-align:center;padding:20px">Aucun log</td></tr>'
+}
+
+// ══════════════════════════════════════════════════════════
+//  TEACHER DATA LOADERS
+// ══════════════════════════════════════════════════════════
+async function loadTeacherOverview() {
+  const { data: courses } = await sb.from('courses').select('*').eq('teacher_id', currentUser.id)
+  const { data: sessions } = await sb.from('bookings').select('*').eq('teacher_id', currentUser.id).eq('status','scheduled').order('scheduled_at')
+  const ts = document.getElementById('t-stats')
+  if (ts) ts.innerHTML = [
+    { icon:'📚', label:'Cours actifs', val:(courses||[]).filter(c=>c.status==='published').length, color:'var(--forest)' },
+    { icon:'📅', label:'Sessions à venir', val:(sessions||[]).length, color:'var(--gold)' },
+    { icon:'⏱', label:'Heures totales', val:`${currentProfile.total_hours||0}h`, color:'var(--clay)' },
+    { icon:'💶', label:'Revenus en attente', val:`€${currentProfile.pending_payout||0}`, color:'var(--slate)' },
+  ].map(s=>`<div class="stat-card"><div class="stat-icon">${s.icon}</div><div class="stat-val" style="color:${s.color}">${s.val}</div><div class="stat-label">${s.label}</div></div>`).join('')
+
+  const up = document.getElementById('t-upcoming')
+  if (up) up.innerHTML = (sessions||[]).slice(0,3).map(b=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:.5px solid var(--border)">
+      <div><div style="font-weight:600;font-size:13px;color:var(--forest)">${b.topic||'Session privée'}</div><div style="font-size:12px;color:#aaa">${new Date(b.scheduled_at).toLocaleString('fr-FR')} · ${b.duration_min} min</div></div>
+      ${statusBadge(b.status)}
+    </div>`).join('') || '<p style="color:#aaa;font-size:13px">Aucune session planifiée.</p>'
+}
+
+async function loadTeacherCourses() {
+  const { data } = await sb.from('courses').select('*').eq('teacher_id', currentUser.id).order('created_at',{ascending:false})
+  const el = document.getElementById('t-courses-list')
+  if (!el) return
+  el.innerHTML = (data||[]).map(c=>`
+    <div class="card" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+      <span style="font-size:32px">${c.thumbnail_emoji||'📚'}</span>
+      <div style="flex:1;min-width:200px"><div style="font-weight:700;font-size:14px;color:var(--forest)">${c.title}</div><div style="font-size:12px;color:#aaa">Niveau ${c.level} · ${(c.price_fcfa||0).toLocaleString()} FCFA</div></div>
+      ${statusBadge(c.status)}
+      <div style="display:flex;gap:8px">
+        ${c.status==='draft'?`<button class="btn-sm btn-forest" onclick="submitCourseForApproval('${c.id}')">Soumettre</button>`:''}
+        <button class="btn-sm btn-border" onclick="toast('Éditeur de contenu — prochaine étape.')">Modifier</button>
+      </div>
+    </div>`).join('') || '<div class="card" style="color:#aaa;text-align:center;padding:30px">Aucun cours créé. <button class="btn-sm btn-forest" onclick="navigate(\'t-create\')" style="margin-left:10px">+ Créer</button></div>'
+}
+
+async function submitCourseForApproval(id) {
+  const { error } = await sb.from('courses').update({ status: 'pending' }).eq('id', id)
+  if (error) { toast('Erreur', true); return }
+  toast('Cours soumis pour approbation!')
+  loadTeacherCourses()
+}
+
+async function loadCalendar() {
+  const { data } = await sb.from('availability_slots').select('*').eq('teacher_id', currentUser.id)
+  availState = {}
+  ;(data||[]).forEach(s => {
+    const key = `${s.day_of_week}-${s.start_time}`
+    availState[key] = s.is_active
+  })
+  renderCalendar()
+}
+
+function renderCalendar() {
+  const el = document.getElementById('avail-grid-wrap')
+  if (!el) return
+  let html = `<table class="avail-table"><thead><tr><th style="text-align:left;width:70px">Créneau</th>`
+  DAYS.forEach(d => html += `<th>${d}</th>`)
+  html += '</tr></thead><tbody>'
+  SLOTS.forEach((slot, si) => {
+    html += `<tr><td style="padding:4px 6px;font-size:11px;color:#aaa;white-space:nowrap">${slot}</td>`
+    DAYS.forEach((_, di) => {
+      const key = `${di}-${slot}:00`
+      const on = availState[key] !== false && availState[key] !== undefined ? availState[key] : false
+      html += `<td><button class="slot-btn ${on?'on':'off'}" onclick="toggleSlot(${di},'${slot}:00')">${on?'✓':'—'}</button></td>`
+    })
+    html += '</tr>'
+  })
+  html += '</tbody></table>'
+  el.innerHTML = html
+}
+
+function toggleSlot(dayIdx, time) {
+  const key = `${dayIdx}-${time}`
+  availState[key] = !availState[key]
+  renderCalendar()
+}
+
+async function saveAvailability() {
+  const upserts = Object.entries(availState).map(([key, active]) => {
+    const [day, time] = key.split('-')
+    return { teacher_id: currentUser.id, day_of_week: parseInt(day), start_time: time, end_time: time, is_active: active }
+  })
+  const { error } = await sb.from('availability_slots').upsert(upserts, { onConflict: 'teacher_id,day_of_week,start_time' })
+  if (error) { toast('Erreur: ' + error.message, true); return }
+  toast('Disponibilités enregistrées!')
+}
+
+async function loadTeacherSessions() {
+  const { data } = await sb.from('bookings').select('*').eq('teacher_id', currentUser.id).order('scheduled_at',{ascending:false})
+  const el = document.getElementById('t-sessions-list')
+  if (!el) return
+  el.innerHTML = (data||[]).map(b=>`
+    <div class="card" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div><div style="font-weight:700;font-size:14px;color:var(--forest)">${b.topic||'Session privée'}</div><div style="font-size:12px;color:#aaa">${new Date(b.scheduled_at).toLocaleString('fr-FR')} · ${b.duration_min} min</div></div>
+      ${statusBadge(b.status)}
+      <div style="display:flex;gap:8px">
+        ${b.status==='scheduled'?`<button class="btn-sm btn-forest" onclick="startSession('${b.id}')">▶ Démarrer</button>`:''}
+        ${b.status==='in_progress'?`<button class="btn-sm btn-gold" onclick="endSession('${b.id}')">⏹ Terminer</button>`:''}
+        ${b.status==='disputed'?`<span style="font-size:12px;color:var(--clay);font-weight:600">⚠ En résolution</span>`:''}
+      </div>
+    </div>`).join('') || '<div class="card" style="color:#aaa;text-align:center;padding:30px">Aucune session</div>'
+}
+
+async function startSession(id) {
+  const { error } = await sb.from('bookings').update({ status: 'in_progress' }).eq('id', id)
+  if (error) { toast('Erreur', true); return }
+  toast('Session démarrée!')
+  loadTeacherSessions()
+}
+async function endSession(id) {
+  const { error } = await sb.from('bookings').update({ status: 'awaiting_confirmation' }).eq('id', id)
+  if (error) { toast('Erreur', true); return }
+  toast('Session terminée — en attente de confirmation étudiant.')
+  loadTeacherSessions()
+}
+
+async function loadTeacherEarnings() {
+  const { data: pays } = await sb.from('teacher_payouts').select('*').eq('teacher_id', currentUser.id).order('period_start',{ascending:false})
+  const ts = document.getElementById('t-earn-stats')
+  const rate = currentProfile.hourly_rate_eur || 12
+  if (ts) ts.innerHTML = [
+    { icon:'⏱', label:'Heures totales', val:`${currentProfile.total_hours||0}h`, color:'var(--forest)' },
+    { icon:'💶', label:'Montant dû', val:`€${(currentProfile.pending_payout||0)}`, color:'var(--clay)' },
+    { icon:'💰', label:'Taux horaire', val:`€${rate}/h`, color:'var(--gold)' },
+    { icon:'✅', label:'Total payé', val:`€${((currentProfile.total_hours||0)*rate - (currentProfile.pending_payout||0)).toFixed(0)}`, color:'var(--forest3)' },
+  ].map(s=>`<div class="stat-card"><div class="stat-icon">${s.icon}</div><div class="stat-val" style="color:${s.color}">${s.val}</div><div class="stat-label">${s.label}</div></div>`).join('')
+
+  const hist = document.getElementById('t-earn-hist')
+  if (hist) hist.innerHTML = (pays||[]).map(p=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:.5px solid var(--border);font-size:13px">
+      <span style="color:#888">${p.period_start} → ${p.period_end}</span>
+      <span style="color:#555">${p.approved_hours}h × €${p.rate_eur}</span>
+      <span style="font-weight:700;color:var(--forest)">€${p.amount_eur}</span>
+      <span class="badge ${p.status==='paid'?'badge-green':'badge-gold'}">${p.status==='paid'?'Payé':'En attente'}</span>
+    </div>`).join('') || '<p style="color:#aaa;font-size:13px;padding:12px 0">Aucun historique de paiement.</p>'
+}
+
+async function submitCourse() {
+  const title = document.getElementById('c-title').value.trim()
+  const level = document.getElementById('c-level').value
+  const price = parseFloat(document.getElementById('c-price').value)
+  const desc  = document.getElementById('c-desc').value.trim()
+  const video = document.getElementById('c-video').value.trim()
+  if (!title) { toast('Titre requis.', true); return }
+  const { error } = await sb.from('courses').insert({
+    title, level, price_fcfa: price, description: desc,
+    teacher_id: currentUser.id, status: 'pending', thumbnail_emoji: '📚',
+  })
+  if (error) { toast('Erreur: ' + error.message, true); return }
+  await logAudit('course_submitted', 'courses', null)
+  document.getElementById('course-success').style.display = 'block'
+  document.getElementById('c-title').value = ''
+  document.getElementById('c-desc').value = ''
+  toast('Cours soumis pour approbation!')
+}
+
+// ══════════════════════════════════════════════════════════
+//  STUDENT DATA LOADERS
+// ══════════════════════════════════════════════════════════
+async function loadStudentOverview() {
+  const name = (currentProfile.full_name||'').split(' ')[0]
+  const level = currentProfile.current_level || 'A1'
+  const el = document.getElementById('s-greeting')
+  if (el) el.textContent = `Bonjour, ${name}! 👋`
+
+  const { data: enrs } = await sb.from('enrollments').select('*').eq('student_id', currentUser.id)
+  const { data: certs } = await sb.from('certificates').select('*').eq('student_id', currentUser.id)
+  const { data: books } = await sb.from('bookings').select('*').eq('student_id', currentUser.id).eq('status','scheduled').order('scheduled_at').limit(1)
+  const enrollment = (enrs||[]).find(e => e.course_id)
+  const pct = enrollment?.progress_pct || 0
+
+  const ss = document.getElementById('s-stats')
+  if (ss) ss.innerHTML = [
+    { icon:'📈', label:'Niveau actuel', val: level, color:'var(--gold)' },
+    { icon:'✅', label:'Progression', val:`${pct}%`, color:'var(--forest)' },
+    { icon:'🏅', label:'Certificats', val:(certs||[]).length, color:'#6b3fa0' },
+    { icon:'📅', label:'Sessions', val:(books||[]).length, color:'var(--clay)' },
+  ].map(s=>`<div class="stat-card"><div class="stat-icon">${s.icon}</div><div class="stat-val" style="color:${s.color}">${s.val}</div><div class="stat-label">${s.label}</div></div>`).join('')
+
+  const pb = document.getElementById('s-prog-bar')
+  const pp = document.getElementById('s-prog-pct')
+  const pt = document.getElementById('s-prog-title')
+  if (pb) pb.style.width = pct + '%'
+  if (pp) pp.textContent = pct + '%'
+  if (pt) pt.textContent = `Progression — ${level}`
+
+  const ns = document.getElementById('s-next-session')
+  if (ns) ns.innerHTML = (books||[]).length ? `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px;border-radius:10px;background:#f7f3ec">
+      <div><div style="font-weight:600;font-size:13px;color:var(--forest)">Prof. Kenmogne Alain</div><div style="font-size:12px;color:#888">${(books[0].topic||'Session privée')} · ${new Date(books[0].scheduled_at).toLocaleString('fr-FR')}</div></div>
+      <div style="display:flex;gap:8px">
+        <span class="badge badge-blue">Planifié</span>
+        <button class="btn-sm btn-forest" onclick="validateSession('${books[0].id}')">✓ Valider</button>
+      </div>
+    </div>` : '<p style="color:#aaa;font-size:13px">Aucune session à venir. <button class="btn-sm btn-border" onclick="navigate(\'s-booking\')" style="margin-left:8px">Réserver →</button></p>'
+}
+
+async function validateSession(id) {
+  const { error } = await sb.from('bookings').update({ status: 'confirmed', student_validated: true }).eq('id', id)
+  if (error) { toast('Erreur', true); return }
+  toast('Session confirmée! Merci.')
+  loadStudentOverview()
+}
+
+async function loadStudentCourses() {
+  const level = currentProfile.current_level || 'A1'
+  const { data: published } = await sb.from('courses').select('*').eq('status','published').order('level')
+  const { data: enrs } = await sb.from('enrollments').select('*').eq('student_id', currentUser.id)
+  const el = document.getElementById('s-courses-list')
+  if (!el) return
+  const courseData = Object.entries(CURRICULUM).map(([lvl, cd]) => {
+    const pubCourse = (published||[]).find(c=>c.level===lvl)
+    const enr = (enrs||[]).find(e=> pubCourse && e.course_id===pubCourse.id)
+    return { lvl, cd, pubCourse, enr, pct: enr?.progress_pct||0 }
+  })
+  el.innerHTML = courseData.map(({ lvl, cd, enr, pct }) => `
+    <div class="card" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;border:${lvl===level?'2px solid var(--forest)':'1px solid var(--border)'}">
+      <span style="font-size:32px">${cd.icon}</span>
+      <div style="flex:1;min-width:180px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <span style="font-weight:700;color:${cd.color}">${lvl}</span>
+          ${lvl===level?`<span class="badge badge-green">En cours</span>`:''}
+        </div>
+        <div style="font-weight:700;font-size:14px;color:var(--forest);margin-bottom:8px">${cd.nameFr}</div>
+        <div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:${pct}%;background:${cd.color}"></div></div><span style="font-size:12px;font-weight:600;color:${cd.color}">${Math.round(pct)}%</span></div>
+      </div>
+      <button class="btn-sm btn-forest" onclick="navigate('s-learn')">
+        ${pct>0?'Continuer →':'Commencer'}
+      </button>
+    </div>`).join('')
+}
+
+async function loadLearn() {
+  const level = currentProfile.current_level || 'A1'
+  const cd = CURRICULUM[level]
+  if (!cd) { document.getElementById('player-wrap').innerHTML = '<p style="color:#aaa">Contenu à venir.</p>'; return }
+
+  const { data: progressData } = await sb.from('lesson_progress').select('*').eq('student_id', currentUser.id)
+  const completedIds = new Set((progressData||[]).filter(p=>p.completed).map(p=>p.lesson_id))
+  const allLessons = cd.modules.flatMap(m => m.lessons.map(l => ({...l, module: m.title})))
+  const firstIncomplete = allLessons.find(l => !completedIds.has(l.id)) || allLessons[0]
+
+  renderPlayer(level, cd, allLessons, completedIds, firstIncomplete)
+}
+
+function renderPlayer(level, cd, allLessons, completedIds, currentLesson) {
+  const el = document.getElementById('player-wrap')
+  if (!el) return
+
+  // group by module
+  const byModule = {}
+  allLessons.forEach(l => { if (!byModule[l.module]) byModule[l.module] = []; byModule[l.module].push(l) })
+
+  let sidebarHTML = `<div class="lesson-sidebar"><div class="ls-header">${level} · Leçons (${completedIds.size}/${allLessons.length})</div>`
+  Object.entries(byModule).forEach(([mod, lessons]) => {
+    sidebarHTML += `<div class="ls-mod">${mod}</div>`
+    lessons.forEach((l, i) => {
+      const done = completedIds.has(l.id)
+      const active = l.id === currentLesson.id
+      sidebarHTML += `<button class="ls-lesson ${active?'active':''} ${done?'done':''}" onclick="switchLesson('${l.id}','${level}')">
+        <div class="ls-num">${done?'✓':(i+1)}</div>
+        <div class="ls-text"><div class="ls-title">${currentProfile.language==='fr' ? l.title : (l.titleEn||l.title)}</div><div class="ls-dur">${l.dur}</div></div>
+      </button>`
+    })
+  })
+  sidebarHTML += `</div>`
+
+  const hasVideo = currentLesson.videoUrl && currentLesson.videoUrl.length > 10
+  const videoHTML = hasVideo
+    ? `<iframe class="video-embed" src="${currentLesson.videoUrl}" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>`
+    : `<div class="video-placeholder"><div class="video-play">▶</div><div class="video-title">${currentLesson.title}</div><div class="video-meta">${currentLesson.dur} · ${level}</div><div style="color:rgba(255,255,255,.3);font-size:11px;margin-top:8px">Vidéo YouTube à intégrer · Collez l'URL embed dans le champ videoUrl</div></div>`
+
+  const isDone = completedIds.has(currentLesson.id)
+  const desc = currentProfile.language==='fr' ? (currentLesson.desc||'') : (currentLesson.descEn||currentLesson.desc||'')
+
+  el.innerHTML = sidebarHTML + `<div class="player-main">
+    <div class="video-area">${videoHTML}</div>
+    <div class="card">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px">
+        <div><h2 style="font-family:'DM Serif Display',serif;font-size:19px;color:var(--forest);margin-bottom:4px">${currentProfile.language==='fr'?currentLesson.title:(currentLesson.titleEn||currentLesson.title)}</h2>
+        <div style="font-size:12px;color:#aaa">⏱ ${currentLesson.dur} · ${level}</div></div>
+        <button class="btn-sm ${isDone?'btn-success':'btn-forest'}" onclick="markLessonComplete('${currentLesson.id}','${level}')" ${isDone?'disabled':''}>
+          ${isDone?'✓ Complété':'Marquer complété'}
+        </button>
+      </div>
+      <p style="font-size:13px;color:#666;line-height:1.7;margin-bottom:16px">${desc}</p>
+      <div style="padding:14px;border-radius:10px;background:#f7f3ec">
+        <div style="font-size:11px;font-weight:700;color:#aaa;letter-spacing:.06em;margin-bottom:10px">📎 MATÉRIELS</div>
+        <p style="font-size:12px;color:#888">Les PDFs et documents seront disponibles ici une fois téléversés par l'enseignant.</p>
+      </div>
+    </div>
+  </div>`
+}
+
+async function switchLesson(lessonId, level) {
+  const cd = CURRICULUM[level]
+  const allLessons = cd.modules.flatMap(m => m.lessons.map(l => ({...l, module: m.title})))
+  const { data: progressData } = await sb.from('lesson_progress').select('*').eq('student_id', currentUser.id)
+  const completedIds = new Set((progressData||[]).filter(p=>p.completed).map(p=>p.lesson_id))
+  const lesson = allLessons.find(l => l.id === lessonId)
+  if (lesson) renderPlayer(level, cd, allLessons, completedIds, lesson)
+}
+
+async function markLessonComplete(lessonId, level) {
+  const { data: courses } = await sb.from('courses').select('id').eq('level', level).eq('status','published').limit(1)
+  const courseId = courses?.[0]?.id
+  const { error } = await sb.from('lesson_progress').upsert(
+    { student_id: currentUser.id, lesson_id: lessonId, course_id: courseId||lessonId, completed: true, completed_at: new Date().toISOString() },
+    { onConflict: 'student_id,lesson_id' }
+  )
+  if (error) { toast('Erreur: ' + error.message, true); return }
+  toast('Leçon complétée! ✓')
+  loadLearn()
+}
+
+// ── FLASHCARDS ────────────────────────────────────────────
+function loadFlashcards() {
+  const level = currentProfile.current_level || 'A1'
+  const cards = CURRICULUM[level]?.flashcards || []
+  flashcardIdx = 0; flashcardFlipped = false
+  renderFlashcard(cards)
+}
+
+function renderFlashcard(cards) {
+  const el = document.getElementById('flash-wrap')
+  if (!el || !cards.length) { if(el) el.innerHTML = '<p style="color:#aaa">Aucune flashcard disponible.</p>'; return }
+  const c = cards[flashcardIdx]
+  const trans = currentProfile.language==='fr' ? c.fr : c.en
+  el.innerHTML = `
+    <div style="text-align:center;margin-bottom:12px;font-size:13px;color:#aaa">Carte ${flashcardIdx+1} / ${cards.length}</div>
+    <div class="fc-scene" onclick="flipCard()">
+      <div class="fc-card ${flashcardFlipped?'flipped':''}" id="fc-card">
+        <div class="fc-face fc-front"><div class="fc-de">${c.de}</div><div class="fc-hint">Cliquez pour voir la traduction</div></div>
+        <div class="fc-face fc-back"><div class="fc-tr">${trans}</div><div class="fc-ex" style="margin-top:8px;font-style:italic">"${c.ex}"</div></div>
+      </div>
+    </div>
+    <div class="fc-controls">
+      <button class="btn-sm btn-border" onclick="prevCard()" ${flashcardIdx===0?'disabled':''}>← Précédent</button>
+      <button class="btn-sm btn-forest" onclick="nextCard()" ${flashcardIdx===cards.length-1?'disabled':''}>Suivant →</button>
+    </div>
+    ${flashcardIdx===cards.length-1?`<div style="text-align:center;margin-top:16px"><button class="btn-sm btn-gold" onclick="navigate('s-quiz')">Passer le Quiz →</button></div>`:''}
+  `
+}
+
+function flipCard() { flashcardFlipped = !flashcardFlipped; const c = document.getElementById('fc-card'); if(c) c.classList.toggle('flipped', flashcardFlipped) }
+function nextCard() { const cards = CURRICULUM[currentProfile.current_level||'A1']?.flashcards||[]; if(flashcardIdx<cards.length-1){flashcardIdx++;flashcardFlipped=false;renderFlashcard(cards)} }
+function prevCard() { const cards = CURRICULUM[currentProfile.current_level||'A1']?.flashcards||[]; if(flashcardIdx>0){flashcardIdx--;flashcardFlipped=false;renderFlashcard(cards)} }
+
+// ── QUIZ ──────────────────────────────────────────────────
+function loadQuiz() {
+  const level = currentProfile.current_level || 'A1'
+  const questions = CURRICULUM[level]?.quiz || []
+  quizState = { level, questions, idx: 0, answers: Array(questions.length).fill(null), submitted: false, done: false }
+  renderQuiz()
+}
+
+function renderQuiz() {
+  const el = document.getElementById('quiz-wrap')
+  if (!el) return
+  const qs = quizState
+  if (!qs.questions.length) { el.innerHTML = '<div class="card"><p style="color:#aaa">Quiz à venir pour ce niveau.</p></div>'; return }
+
+  if (qs.done) {
+    const score = qs.answers.filter((a,i)=>a===qs.questions[i]?.correct).length
+    const pct = Math.round(score/qs.questions.length*100)
+    const passed = pct >= 70
+    el.innerHTML = `
+      <div class="card" style="text-align:center;padding:36px">
+        <div style="font-size:52px;margin-bottom:14px">${passed?'🏅':'📚'}</div>
+        <div style="font-family:'DM Serif Display',serif;font-size:22px;color:var(--forest);margin-bottom:8px">${passed?'Félicitations!':'Continuez!'}</div>
+        <div style="font-size:40px;font-weight:700;font-family:'DM Serif Display',serif;color:${passed?'#16a34a':'var(--clay)'};margin:14px 0">${pct}%</div>
+        <p style="color:#888;font-size:13px;margin-bottom:6px">${score}/${qs.questions.length} bonnes réponses</p>
+        <div style="padding:12px;border-radius:10px;background:${passed?'#f0fdf4':'#fff7ed'};border:1px solid ${passed?'#bbf7d0':'#fed7aa'};color:${passed?'#16a34a':'#92400e'};font-size:13px;margin:16px 0">
+          ${passed?`Niveau ${qs.level} validé! Votre certificat est maintenant disponible.`:'Score minimum: 70%. Révisez les flashcards et réessayez!'}
+        </div>
+        <div style="display:flex;gap:10px;justify-content:center">
+          <button class="btn-sm btn-border" onclick="loadQuiz()">Recommencer</button>
+          ${passed?`<button class="btn-sm btn-forest" onclick="navigate('s-cert')">🏅 Voir mon certificat</button>`:''}
+          ${passed?`<button class="btn-sm" style="background:var(--gold);color:white;border-color:var(--gold)" onclick="saveQuizResult(${pct},true)">Enregistrer résultat</button>`:''}
+        </div>
+      </div>`
+    if (passed) saveQuizResult(pct, true)
+    return
+  }
+
+  const q = qs.questions[qs.idx]
+  const lang = currentProfile.language || 'fr'
+  el.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-family:'DM Serif Display',serif;font-size:18px;color:var(--forest)">Quiz — ${qs.level}</div>
+      <span style="font-size:13px;color:#888">${qs.idx+1} / ${qs.questions.length}</span>
+    </div>
+    <div style="height:6px;background:#e8e3da;border-radius:999px;margin-bottom:22px"><div style="height:100%;width:${(qs.idx/qs.questions.length)*100}%;background:var(--gold);border-radius:999px;transition:width .3s"></div></div>
+    <div class="card">
+      <div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.08em;margin-bottom:10px;text-transform:uppercase">Question ${qs.idx+1}</div>
+      <div style="font-family:'DM Serif Display',serif;font-size:17px;color:var(--forest);margin-bottom:20px;line-height:1.4">${lang==='fr'?q.q:q.qEn}</div>
+      <div id="quiz-opts">${(q.opts).map((opt,i) => {
+        let cls = ''
+        if (qs.submitted) {
+          if (i===q.correct) cls = 'correct'
+          else if (i===qs.answers[qs.idx] && i!==q.correct) cls = 'wrong'
+        } else if (qs.answers[qs.idx]===i) cls = 'selected'
+        return `<button class="quiz-opt ${cls} ${qs.submitted?'locked':''}" onclick="selectOpt(${i})">
+          <span class="opt-letter">${String.fromCharCode(65+i)}</span>
+          <span style="font-size:13px;font-weight:500">${opt}</span>
+        </button>`
+      }).join('')}</div>
+      ${qs.submitted?`<div class="quiz-exp ${qs.answers[qs.idx]===q.correct?'correct':'wrong'}">${qs.answers[qs.idx]===q.correct?'✓ Correct — ':'✗ Incorrect — '}${lang==='fr'?q.exp:q.expEn}</div>`:''}
+      <div style="display:flex;gap:10px">
+        ${!qs.submitted
+          ? `<button class="big-btn" onclick="submitAnswer()" style="opacity:${qs.answers[qs.idx]!==null?1:.4}">Valider la réponse</button>`
+          : qs.idx < qs.questions.length-1
+            ? `<button class="big-btn" onclick="nextQuestion()">Question suivante →</button>`
+            : `<button class="big-btn" onclick="quizState.done=true;renderQuiz()">🏁 Voir les résultats</button>`
+        }
+      </div>
+    </div>`
+}
+
+function selectOpt(i) { if (!quizState.submitted) { quizState.answers[quizState.idx]=i; renderQuiz() } }
+function submitAnswer() { if (quizState.answers[quizState.idx]===null) return; quizState.submitted=true; renderQuiz() }
+function nextQuestion() { quizState.idx++; quizState.submitted=false; renderQuiz() }
+
+async function saveQuizResult(pct, passed) {
+  const level = quizState.level
+  const { data: courses } = await sb.from('courses').select('id').eq('level',level).eq('status','published').limit(1)
+  const courseId = courses?.[0]?.id
+  if (!courseId) return
+  await sb.from('quiz_attempts').insert({
+    student_id: currentUser.id, course_id: courseId,
+    answers: quizState.answers.map((a,i)=>({question_id:String(i),selected_index:a,correct:a===quizState.questions[i]?.correct})),
+    score_pct: pct, passed, is_final_exam: true
+  })
+  if (passed) {
+    await sb.from('certificates').upsert({ student_id: currentUser.id, course_id: courseId }, { onConflict: 'student_id,course_id' })
+    toast('Certificat débloqué! 🏅')
+  }
+}
+
+// ── BOOKING ───────────────────────────────────────────────
+async function loadBooking() {
+  const { data: slots } = await sb.from('availability_slots').select('*, teacher:profiles!teacher_id(full_name)').eq('is_active',true)
+  const { data: myBooks } = await sb.from('bookings').select('*').eq('student_id',currentUser.id).order('scheduled_at',{ascending:false})
+  const el = document.getElementById('booking-wrap')
+  if (!el) return
+
+  const grouped = {}
+  ;(slots||[]).forEach(s => {
+    const dayName = DAYS[s.day_of_week]||'Lundi'
+    if (!grouped[dayName]) grouped[dayName] = []
+    grouped[dayName].push(s)
+  })
+
+  let slotHtml = Object.entries(grouped).map(([day,ss])=>`
+    <div style="margin-bottom:16px"><div style="font-weight:600;font-size:13px;color:var(--forest);margin-bottom:10px">📅 ${day}</div>
+    <div class="slot-pick">${ss.map(s=>`<button onclick="bookSlot('${s.teacher_id}','${s.start_time}')" title="${s.teacher?.full_name||'Tuteur'}">${s.start_time}</button>`).join('')}</div></div>`).join('')
+
+  if (!slotHtml) slotHtml = '<p style="color:#aaa;font-size:13px">Aucun créneau disponible pour le moment. L\'enseignant doit définir ses disponibilités.</p>'
+
+  el.innerHTML = `
+    <div class="teacher-card">
+      <div class="teacher-avatar">KA</div>
+      <div style="flex:1"><div style="font-weight:700;font-size:15px;color:var(--forest)">Prof. Kenmogne Alain</div><div style="font-size:12px;color:#aaa;margin-top:2px">Germaniste · 20+ ans d'expérience</div><div style="margin-top:4px;color:var(--gold)">★★★★★</div></div>
+      <div style="text-align:right"><div style="font-weight:700;font-size:18px;color:var(--forest)">12 000 FCFA</div><div style="font-size:11px;color:#aaa">par heure</div></div>
+    </div>
+    <div class="card"><div class="card-title">Créneaux disponibles</div>${slotHtml}</div>
+    <div class="card"><div class="card-title">Mes Réservations</div>
+      ${(myBooks||[]).slice(0,5).map(b=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:.5px solid var(--border)">
+          <div><div style="font-weight:600;font-size:13px;color:var(--forest)">${b.topic||'Session privée'}</div><div style="font-size:12px;color:#aaa">${new Date(b.scheduled_at).toLocaleString('fr-FR')}</div></div>
+          <div style="display:flex;gap:8px;align-items:center">
+            ${statusBadge(b.status)}
+            ${b.status==='awaiting_confirmation'?`<button class="btn-sm btn-success" onclick="validateSession('${b.id}')">✓ Confirmer</button>`:''}
+          </div>
+        </div>`).join('') || '<p style="color:#aaa;font-size:13px">Aucune réservation.</p>'}
+    </div>`
+}
+
+async function bookSlot(teacherId, startTime) {
+  const topic = prompt('Sujet de la session (optionnel):') || 'Session privée'
+  const scheduledAt = new Date()
+  scheduledAt.setHours(parseInt(startTime.split(':')[0]))
+  scheduledAt.setMinutes(0)
+  scheduledAt.setSeconds(0)
+  scheduledAt.setDate(scheduledAt.getDate() + 1)
+
+  const { error } = await sb.from('bookings').insert({
+    student_id: currentUser.id, teacher_id: teacherId,
+    scheduled_at: scheduledAt.toISOString(),
+    duration_min: 60, topic, price_fcfa: 12000, status: 'scheduled'
+  })
+  if (error) { toast('Erreur: ' + error.message, true); return }
+  toast('Session réservée! ✓')
+  loadBooking()
+}
+
+// ── CERTIFICATE ───────────────────────────────────────────
+async function loadCertificate() {
+  const { data: certs } = await sb.from('certificates').select('*, course:courses(title, title_fr, level)').eq('student_id', currentUser.id)
+  const el = document.getElementById('cert-wrap')
+  if (!el) return
+
+  if (!certs || !certs.length) {
+    el.innerHTML = `<div class="card" style="text-align:center;padding:36px">
+      <div style="font-size:48px;margin-bottom:14px">🎓</div>
+      <div style="font-family:'DM Serif Display',serif;font-size:18px;color:var(--forest);margin-bottom:10px">Aucun certificat encore</div>
+      <p style="color:#888;font-size:13px;margin-bottom:18px">Complétez un cours et réussissez le quiz (≥ 70%) pour obtenir votre certificat.</p>
+      <button class="btn-sm btn-forest" onclick="navigate('s-quiz')">Passer le Quiz →</button>
+    </div>`
+    return
+  }
+
+  el.innerHTML = certs.map(cert => {
+    const level = cert.course?.level || 'A1'
+    const cd = CURRICULUM[level] || {}
+    const today = new Date().toLocaleDateString('fr-FR', { year:'numeric', month:'long', day:'numeric' })
+    return `
+    <div class="cert-wrap" style="margin-bottom:20px">
+      <div class="cert-band"></div>
+      <div class="cert-body">
+        <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:20px">
+          <div class="sb-logo-mark" style="width:40px;height:40px;font-size:13px">DA</div>
+          <div style="text-align:left"><div style="font-family:'DM Serif Display',serif;font-size:16px;font-weight:700;color:var(--forest)">Deutsch Akademie Kamerun</div><div style="font-size:11px;color:#aaa">Plateforme officielle</div></div>
+        </div>
+        <div class="cert-divider"></div>
+        <div class="cert-eyebrow">Certificat de Réussite</div>
+        <div class="cert-title">Décerné à</div>
+        <div class="cert-name">${currentProfile.full_name}</div>
+        <p style="font-size:13px;color:#888;max-width:420px;margin:0 auto 14px;line-height:1.7">a complété avec succès le programme d'allemand de niveau ${level} du Cadre Européen Commun de Référence pour les Langues (CECRL).</p>
+        <div class="cert-level-badge"><span style="font-size:24px">${cd.icon||'🎓'}</span><div><div class="lv">${level}</div><div class="lv-name">${cd.nameFr||level}</div></div></div>
+        <div class="cert-sigs">
+          <div><div class="cert-sig-line"></div><div class="cert-sig-name">Prof. Kenmogne Alain</div><div class="cert-sig-role">Directeur Pédagogique</div></div>
+          <div><div class="cert-sig-line"></div><div class="cert-sig-name">Deutsch Akademie</div><div class="cert-sig-role">Émis le ${today}</div></div>
+        </div>
+        <div class="cert-id">${cert.cert_number}</div>
+      </div>
+      <div style="height:6px;background:linear-gradient(90deg,var(--gold),var(--gold2))"></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:24px">
+      <button class="btn-sm btn-forest" onclick="window.print()">🖨 Imprimer</button>
+      <button class="btn-sm btn-border" onclick="toast('Lien de partage copié!')">🔗 Partager</button>
+    </div>`
+  }).join('')
+}
+
+// ── BILLING ───────────────────────────────────────────────
+async function loadBilling() {
+  const { data: pays } = await sb.from('payments').select('*').eq('student_id', currentUser.id).order('created_at',{ascending:false})
+  const { data: enrs } = await sb.from('enrollments').select('*, course:courses(title)').eq('student_id', currentUser.id)
+  const el = document.getElementById('billing-wrap')
+  if (!el) return
+  const subStatus = (enrs||[])[0]?.payment_status || 'pending'
+  const badgeCls = { paid:'badge-green', pending:'badge-gold', overdue:'badge-red', suspended:'badge-red' }
+  const subLabel = { paid:'✓ Actif', pending:'⏳ En attente', overdue:'⚠ En retard', suspended:'🔒 Suspendu' }
+  el.innerHTML = `
+    <div class="card" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;border:2px solid var(--gold)">
+      <div><div style="font-weight:700;font-size:14px;color:var(--forest)">Abonnement Mensuel</div><div style="font-size:12px;color:#aaa;margin-top:2px">15 000 FCFA / mois</div></div>
+      <span class="badge ${badgeCls[subStatus]||'badge-gray'}">${subLabel[subStatus]||subStatus}</span>
+    </div>
+    <div class="card"><div class="card-title">Méthodes de paiement</div>
+      ${['MTN Mobile Money','Orange Money','Stripe (Visa/Mastercard)','PayPal'].map((m,i)=>`
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:.5px solid var(--border)">
+          <span style="font-size:13px;color:#555">${m}</span>
+          <button class="btn-sm ${i===0?'btn-forest':'btn-border'}" onclick="toast('Intégration paiement à venir.')">
+            ${i===0?'✓ Actif':'Connecter'}
+          </button>
+        </div>`).join('')}
+    </div>
+    <div class="card"><div class="card-title">Historique des paiements</div>
+      ${(pays||[]).map(p=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:.5px solid var(--border);font-size:13px">
+          <div><div style="font-weight:500;color:var(--forest)">${p.description||'Cours'}</div><div style="font-size:11px;color:#aaa">${new Date(p.created_at).toLocaleDateString('fr-FR')} · ${p.method}</div></div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-weight:700;color:var(--forest)">${(p.amount_fcfa||0).toLocaleString()} FCFA</span>
+            <span class="badge ${p.status==='paid'?'badge-green':'badge-gold'}">${p.status==='paid'?'Payé':'En attente'}</span>
+          </div>
+        </div>`).join('') || '<p style="color:#aaa;font-size:13px;padding:10px 0">Aucun paiement enregistré.</p>'}
+    </div>`
+}
+
+// ── HELPERS ───────────────────────────────────────────────
+function statusBadge(status) {
+  const map = {
+    published:'badge-green', active:'badge-green', confirmed:'badge-green', paid:'badge-green',
+    draft:'badge-gray', cancelled:'badge-gray', no_show:'badge-gray',
+    pending:'badge-gold', scheduled:'badge-blue', awaiting_confirmation:'badge-gold', in_progress:'badge-blue',
+    disputed:'badge-red', suspended:'badge-red', overdue:'badge-red', failed:'badge-red',
+  }
+  const labels = {
+    published:'Publié', active:'Actif', confirmed:'Confirmé', paid:'Payé',
+    draft:'Brouillon', cancelled:'Annulé', no_show:'Absent',
+    pending:'En attente', scheduled:'Planifié', awaiting_confirmation:'Attente confirm.',
+    in_progress:'En cours', disputed:'Contesté', suspended:'Suspendu', overdue:'En retard', failed:'Échoué',
+  }
+  return `<span class="badge ${map[status]||'badge-gray'}">${labels[status]||status}</span>`
+}
+
+async function logAudit(action, table, recordId) {
+  await sb.from('audit_logs').insert({
+    actor_id: currentUser?.id,
+    actor_email: currentProfile?.email || currentUser?.email,
+    actor_role: currentProfile?.role,
+    action, table_name: table, record_id: recordId
+  })
+}
+
+// ── BOOT ──────────────────────────────────────────────────
+boot()
+</script>
+</body>
+</html>
