@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Deutsch Akademie Kamerun</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
 <style>
@@ -488,8 +488,8 @@ tr:hover td { background: #fdfaf6; }
 // ══════════════════════════════════════════════════════════
 //  CONFIGURATION — paste your Supabase credentials here
 // ══════════════════════════════════════════════════════════
-const SUPABASE_URL  = 'PASTE_YOUR_SUPABASE_URL_HERE'
-const SUPABASE_KEY  = 'PASTE_YOUR_SUPABASE_ANON_KEY_HERE'
+const SUPABASE_URL  = 'https://ifvazxotneatcxhdckkh.supabase.co'
+const SUPABASE_KEY  = 'sb_publishable_w2szHH3QOk7S--BOBs_8Vg_SeFZ-_RU'
 
 // ── Supabase client ───────────────────────────────────────
 const { createClient } = window.supabase
@@ -703,13 +703,26 @@ async function loadProfile(userId) {
 
 // ── Boot: check session ───────────────────────────────────
 async function boot() {
-  const { data: { session } } = await sb.auth.getSession()
-  if (session) {
-    currentUser = session.user
-    currentProfile = await loadProfile(session.user.id)
-    if (currentProfile) { closeAuth(); buildPortal(); showApp() }
-    else showLanding()
-  } else {
+  // Safety check — if Supabase library didn't load, show clear error
+  if (!window.supabase) {
+    document.getElementById('loading-screen').innerHTML =
+      '<div style="color:white;text-align:center;padding:40px;max-width:400px"><div style="font-size:48px;margin-bottom:16px">⚠️</div><div style="font-size:16px;margin-bottom:12px">Erreur de chargement</div><p style="color:rgba(255,255,255,.6);font-size:13px">La bibliothèque Supabase n\'a pas pu se charger. Vérifiez votre connexion internet et rechargez la page.</p><button onclick="location.reload()" style="margin-top:20px;padding:10px 24px;border-radius:8px;background:#C99A2E;color:white;border:none;cursor:pointer;font-size:14px">Recharger</button></div>'
+    return
+  }
+
+  try {
+    const { data: { session }, error } = await sb.auth.getSession()
+    if (error) throw error
+    if (session) {
+      currentUser = session.user
+      currentProfile = await loadProfile(session.user.id)
+      if (currentProfile) { closeAuth(); buildPortal(); showApp() }
+      else showLanding()
+    } else {
+      showLanding()
+    }
+  } catch (err) {
+    console.error('Boot error:', err)
     showLanding()
   }
 
